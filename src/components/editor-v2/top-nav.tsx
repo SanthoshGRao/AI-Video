@@ -132,7 +132,7 @@ export function TopNav({
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => { save(); toast.success("Project saved"); }}
+          onClick={() => { save(false); toast.success("Project saved"); }}
           className="h-8 gap-1.5 text-xs text-zinc-200 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10"
         >
           <Check className="size-3.5" /> Save

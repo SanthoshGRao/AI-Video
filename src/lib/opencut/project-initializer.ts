@@ -1,9 +1,27 @@
 import { prisma } from "@/lib/db/prisma";
+import { Prisma } from "@/generated/prisma/client";
 import type { OpenCutProject } from "@/opencut/types";
 import type { Project, AudioAsset, SubtitleTrackData, MediaAsset, ScriptVersion } from "@/types";
 import { openCutProjectMapper, type GeneratedAssetsData } from "./project-mapper";
 import { openCutProjectToTimelineDocument } from "@/opencut/generated-assets-mapper";
 import { assertValidTimeline } from "@/lib/timeline/validate";
+
+/**
+ * Retry once on a Postgres serialization failure (Prisma P2034) — the
+ * expected, recoverable outcome of two concurrent SERIALIZABLE writers
+ * racing on the same project's timeline (e.g. this initial save racing
+ * the editor's first autosave right after the page mounts).
+ */
+async function withSerializableRetry<T>(fn: () => Promise<T>): Promise<T> {
+  try {
+    return await fn();
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2034") {
+      return await fn();
+    }
+    throw error;
+  }
+}
 
 /**
  * OpenCutProjectInitializer
@@ -56,14 +74,6 @@ export class OpenCutProjectInitializer {
       const doc = openCutProjectToTimelineDocument(project);
       assertValidTimeline(doc);
 
-      const existing = await prisma.timeline.findFirst({
-        where: { projectId },
-        orderBy: [
-          { version: "desc" },
-          { createdAt: "desc" }
-        ],
-      });
-
       const payload = {
         tracks: doc.tracks as any,
         clips: doc.clips as any,
@@ -73,21 +83,29 @@ export class OpenCutProjectInitializer {
         isAutosave: false,
       };
 
-      if (existing) {
-        await prisma.timeline.update({
-          where: { id: existing.id },
-          data: payload,
-        });
-      } else {
-        await prisma.timeline.create({
-          data: {
-            projectId,
-            version: 1,
-            ...payload,
-            isAiGenerated: true,
+      await withSerializableRetry(() =>
+        prisma.$transaction(
+          async (tx) => {
+            const existing = await tx.timeline.findFirst({
+              where: { projectId },
+              orderBy: [{ version: "desc" }, { createdAt: "desc" }],
+            });
+
+            if (existing) {
+              return tx.timeline.update({ where: { id: existing.id }, data: payload });
+            }
+            return tx.timeline.create({
+              data: {
+                projectId,
+                version: 1,
+                ...payload,
+                isAiGenerated: true,
+              },
+            });
           },
-        });
-      }
+          { isolationLevel: Prisma.TransactionIsolationLevel.Serializable }
+        )
+      );
     } catch (error) {
       console.error("Failed to save initial timeline:", error);
     }

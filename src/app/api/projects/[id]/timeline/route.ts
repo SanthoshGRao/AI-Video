@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 export const dynamic = "force-dynamic";
-import type { Prisma } from "@/generated/prisma/client";
+import { Prisma } from "@/generated/prisma/client";
 import prisma from "@/lib/db/prisma";
 import { requireProjectAccess } from "@/lib/auth/require-project";
 import { handleRouteError, badRequest } from "@/lib/api/errors";
@@ -20,6 +20,70 @@ async function getLatestTimeline(projectId: string) {
       { createdAt: "desc" }
     ],
   });
+}
+
+/**
+ * Retry once on a Postgres serialization failure (Prisma P2034) — the
+ * expected, recoverable outcome of two concurrent SERIALIZABLE writers
+ * racing on the same project's timeline (e.g. overlapping autosaves).
+ */
+async function withSerializableRetry<T>(fn: () => Promise<T>): Promise<T> {
+  try {
+    return await fn();
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2034") {
+      return await fn();
+    }
+    throw error;
+  }
+}
+
+/**
+ * Read-decide-write the latest Timeline row inside a SERIALIZABLE
+ * transaction, so two concurrent saves (autosave + manual save, or two
+ * tabs) can't both read the same "latest" row and both take the create
+ * branch — one will get a P2034 and retry against the now-current state.
+ */
+async function saveTimelineRow(
+  projectId: string,
+  isAutosave: boolean,
+  bumpVersion: boolean,
+  payload: {
+    tracks: Prisma.InputJsonValue;
+    clips: Prisma.InputJsonValue;
+    transitions: Prisma.InputJsonValue;
+    textLayers: Prisma.InputJsonValue;
+    settings: Prisma.InputJsonValue;
+    isAutosave: boolean;
+  }
+) {
+  return withSerializableRetry(() =>
+    prisma.$transaction(
+      async (tx) => {
+        const existing = await tx.timeline.findFirst({
+          where: { projectId },
+          orderBy: [{ version: "desc" }, { createdAt: "desc" }],
+        });
+
+        if (existing && isAutosave && !bumpVersion && existing.isAutosave) {
+          return tx.timeline.update({ where: { id: existing.id }, data: payload });
+        }
+        if (existing && !bumpVersion && !isAutosave) {
+          return tx.timeline.update({ where: { id: existing.id }, data: { ...payload, isAutosave: false } });
+        }
+        const nextVersion = (existing?.version ?? 0) + 1;
+        return tx.timeline.create({
+          data: {
+            projectId,
+            version: nextVersion,
+            ...payload,
+            isAiGenerated: existing?.isAiGenerated ?? false,
+          },
+        });
+      },
+      { isolationLevel: Prisma.TransactionIsolationLevel.Serializable }
+    )
+  );
 }
 
 export async function GET(_request: Request, context: RouteContext) {
@@ -71,7 +135,6 @@ export async function PUT(request: Request, context: RouteContext) {
 
     assertValidTimeline(doc);
 
-    const existing = await getLatestTimeline(id);
     const isAutosave = body.isAutosave ?? false;
     const bumpVersion = body.bumpVersion ?? false;
 
@@ -84,34 +147,7 @@ export async function PUT(request: Request, context: RouteContext) {
       isAutosave,
     };
 
-    let timeline;
-
-    if (
-      existing &&
-      isAutosave &&
-      !bumpVersion &&
-      existing.isAutosave
-    ) {
-      timeline = await prisma.timeline.update({
-        where: { id: existing.id },
-        data: payload,
-      });
-    } else if (existing && !bumpVersion && !isAutosave) {
-      timeline = await prisma.timeline.update({
-        where: { id: existing.id },
-        data: { ...payload, isAutosave: false },
-      });
-    } else {
-      const nextVersion = (existing?.version ?? 0) + 1;
-      timeline = await prisma.timeline.create({
-        data: {
-          projectId: id,
-          version: nextVersion,
-          ...payload,
-          isAiGenerated: existing?.isAiGenerated ?? false,
-        },
-      });
-    }
+    const timeline = await saveTimelineRow(id, isAutosave, bumpVersion, payload);
 
     await prisma.project.update({
       where: { id },

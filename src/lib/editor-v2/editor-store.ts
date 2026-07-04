@@ -117,6 +117,12 @@ const uid = (p = "id") =>
   `${p}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 6)}`;
 
 let autosaveTimer: ReturnType<typeof setTimeout> | null = null;
+// Guards against overlapping save() calls firing concurrent PUTs: while one
+// is in flight, at most one follow-up save is queued (using the freshest
+// state once it fires) instead of racing a stale response against a newer
+// one. `false` (a deliberate/manual save) always wins over a queued `true`.
+let saveInFlight: Promise<void> | null = null;
+let savePendingAfterCurrent: boolean | null = null;
 
 const HISTORY_LIMIT = 100;
 
@@ -345,7 +351,7 @@ interface EditorState {
   lastSavedAt: number | null;
   toggleAutosave: () => void;
   markDirty: () => void;
-  save: () => void;
+  save: (isAutosave?: boolean) => void;
 
   activeTool: ToolId;
   setActiveTool: (t: ToolId) => void;
@@ -620,7 +626,7 @@ export const useEditor = create<EditorState>((set, get) => ({
       }, 800);
     }
   },
-  save: () => {
+  save: (isAutosave = true) => {
     const s = get();
     const pid = s.activeProjectId;
     if (!pid) return;
@@ -644,9 +650,29 @@ export const useEditor = create<EditorState>((set, get) => ({
       /* ignore */
     }
     set({ dirty: false, lastSavedAt: Date.now() });
-    void import("./timeline-sync")
-      .then(({ saveEditorTimeline }) => saveEditorTimeline(pid, true))
-      .catch((err) => console.error("[editor] Failed to persist timeline to server", err));
+
+    if (saveInFlight) {
+      // A manual save's intent to not be overwritten-in-place always wins
+      // over a queued autosave.
+      savePendingAfterCurrent = savePendingAfterCurrent === false ? false : isAutosave;
+      return;
+    }
+
+    const runSave = (autosave: boolean): Promise<void> =>
+      import("./timeline-sync")
+        .then(({ saveEditorTimeline }) => saveEditorTimeline(pid, autosave))
+        .catch((err) => console.error("[editor] Failed to persist timeline to server", err))
+        .then(() => {
+          if (savePendingAfterCurrent !== null) {
+            const next = savePendingAfterCurrent;
+            savePendingAfterCurrent = null;
+            saveInFlight = runSave(next);
+          } else {
+            saveInFlight = null;
+          }
+        });
+
+    saveInFlight = runSave(isAutosave);
   },
 
   activeTool: "media",

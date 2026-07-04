@@ -91,7 +91,7 @@ export function KeyboardShortcuts() {
       // File / Project (Modifiers first)
       if (mod && e.key.toLowerCase() === "s") {
         e.preventDefault();
-        s.save();
+        s.save(false);
         toast.success("Project saved");
         return;
       }
