@@ -3,6 +3,7 @@ import type { OpenCutProject } from "@/opencut/types";
 import type { Project, AudioAsset, SubtitleTrackData, MediaAsset, ScriptVersion } from "@/types";
 import { openCutProjectMapper, type GeneratedAssetsData } from "./project-mapper";
 import { openCutProjectToTimelineDocument } from "@/opencut/generated-assets-mapper";
+import { assertValidTimeline } from "@/lib/timeline/validate";
 
 /**
  * OpenCutProjectInitializer
@@ -53,6 +54,7 @@ export class OpenCutProjectInitializer {
   private async saveInitialTimeline(projectId: string, project: OpenCutProject): Promise<void> {
     try {
       const doc = openCutProjectToTimelineDocument(project);
+      assertValidTimeline(doc);
 
       const existing = await prisma.timeline.findFirst({
         where: { projectId },

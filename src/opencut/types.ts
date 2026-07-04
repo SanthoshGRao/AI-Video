@@ -1,21 +1,29 @@
 export interface OpenCutProject {
   id: string;
-  title: string;
+  name: string;
+  version: number;
   durationMs: number;
-  fps: number;
-  width: number;
-  height: number;
+  settings: OpenCutSettings;
   scene: OpenCutScene;
   media: OpenCutMediaAsset[];
-  formatVersion: string;
-  createdAt: string;
-  updatedAt: string;
+}
+
+export interface OpenCutSettings {
+  fps: number;
+  canvasSize: { width: number; height: number };
+  background: { type: string; color: string };
 }
 
 export interface OpenCutScene {
   id: string;
-  type: string;
-  tracks: OpenCutTrack[];
+  name: string;
+  isMain: boolean;
+  tracks: {
+    main: OpenCutTrack;
+    overlay: OpenCutTrack[];
+    audio: OpenCutTrack[];
+  };
+  bookmarks: unknown[];
 }
 
 export interface OpenCutTrack {
@@ -23,10 +31,13 @@ export interface OpenCutTrack {
   type: string;
   name?: string;
   elements: OpenCutTimelineElement[];
+  muted: boolean;
+  hidden: boolean;
 }
 
 export interface OpenCutMediaAsset {
   id: string;
+  name?: string;
   type: string;
   url: string;
   thumbnailUrl?: string;
@@ -36,17 +47,33 @@ export interface OpenCutMediaAsset {
   height?: number;
 }
 
+/**
+ * A single timeline element as produced by the track builders
+ * (voice/media/subtitle/fact-overlay). `startTime`/`duration`/`trimStart`/
+ * `trimEnd` are all plain milliseconds (NOT the `*Ms`-suffixed names used
+ * elsewhere in this codebase) — this matches every builder's actual output.
+ */
 export interface OpenCutTimelineElement {
   id: string;
+  name?: string;
   type: string;
+  role?: string;
   mediaId?: string;
+  cueId?: string;
   text?: string;
-  startMs: number;
-  durationMs: number;
-  trimStartMs?: number;
-  trimDurationMs?: number;
+  startTime: number;
+  duration: number;
+  trimStart: number;
+  trimEnd: number;
   volume?: number;
-  position?: { x: number; y: number };
-  style?: Record<string, unknown>;
   animation?: string;
+  params?: Record<string, unknown>;
+  words?: { word: string; startMs: number; endMs: number }[];
+  isSourceAudioEnabled?: boolean;
+  waveform?: number[] | null;
 }
+
+export type OpenCutVideoElement = OpenCutTimelineElement;
+export type OpenCutImageElement = OpenCutTimelineElement;
+export type OpenCutAudioElement = OpenCutTimelineElement;
+export type OpenCutTextElement = OpenCutTimelineElement;

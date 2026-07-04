@@ -10,6 +10,20 @@ export function validateTimelineDocument(
   doc: TimelineDocument
 ): TimelineValidationIssue[] {
   const issues: TimelineValidationIssue[] = [];
+
+  if (!(doc.settings.width > 0) || !(doc.settings.height > 0)) {
+    issues.push({
+      code: "INVALID_CANVAS_SIZE",
+      message: `Timeline settings have an invalid canvas size (${doc.settings.width}x${doc.settings.height})`,
+    });
+  }
+  if (!(doc.settings.fps > 0)) {
+    issues.push({
+      code: "INVALID_FPS",
+      message: `Timeline settings have an invalid fps (${doc.settings.fps})`,
+    });
+  }
+
   const trackIds = new Set(doc.tracks.map((t) => t.id));
 
   for (const clip of Object.values(doc.clips)) {
