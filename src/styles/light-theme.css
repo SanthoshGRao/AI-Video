@@ -1,0 +1,21 @@
+:root {
+  --bg-primary: #f9fafb; /* light background */
+  --bg-secondary: #ffffff;
+  --border-color: #e5e7eb;
+  --text-primary: #111827;
+  --accent: #8b3dff;
+  --accent-hover: #7c2ef0;
+}
+
+body.light-mode {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.bg-primary { background-color: var(--bg-primary); }
+.bg-secondary { background-color: var(--bg-secondary); }
+.border-primary { border-color: var(--border-color); }
+.text-primary { color: var(--text-primary); }
+.text-accent { color: var(--accent); }
+.hover\:bg-accent:hover { background-color: var(--accent); }
+.hover\:bg-accent-hover:hover { background-color: var(--accent-hover); }
