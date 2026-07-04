@@ -107,6 +107,10 @@ export interface Transition {
   // placed between two clips; anchored at this px position on the track
   start: number; // px
   duration: number; // seconds
+  // The clips this transition sits between, captured at creation time so
+  // save doesn't have to re-guess the pairing positionally.
+  clipAId: string;
+  clipBId: string;
 }
 
 /* ------------------------------------------------------------------ */

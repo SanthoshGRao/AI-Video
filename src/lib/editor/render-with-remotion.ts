@@ -310,7 +310,10 @@ export async function renderProjectWithRemotion(options: {
   });
 
   let doc: TimelineDocument;
-  if (options.timelineDoc && Object.keys(options.timelineDoc.clips).length > 0) {
+  if (options.timelineDoc) {
+    // A live snapshot was explicitly provided — respect it exactly, even if
+    // the user cleared every clip. Falling back to the DB timeline here
+    // would silently re-render content the user just removed.
     doc = options.timelineDoc;
     console.log(`[export] Remotion using live editor snapshot (${Object.keys(doc.clips).length} clips)`);
   } else if (timeline) {

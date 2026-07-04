@@ -112,7 +112,10 @@ export async function renderProjectExport(options: {
   onProgress(5);
 
   let doc: TimelineDocument;
-  if (timelineDoc && Object.keys(timelineDoc.clips).length > 0) {
+  if (timelineDoc) {
+    // Respect an explicitly-provided snapshot exactly, even if it's empty —
+    // falling back to the DB timeline here would silently re-render content
+    // the user just removed.
     doc = timelineDoc;
     console.log(`[export] Using live editor snapshot (${Object.keys(doc.clips).length} clips)`);
   } else {

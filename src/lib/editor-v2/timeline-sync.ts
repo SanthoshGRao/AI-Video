@@ -126,14 +126,24 @@ export function buildTimelineSaveBody(input: {
     })),
     clips,
     transitions: input.transitions.map((tr) => {
-      const ordered = input.clips.filter((c) => c.track === tr.track).sort((a, b) => a.start - b.start);
-      const clipA = [...ordered].reverse().find((c) => c.start + c.width <= tr.start + 1) ?? ordered[0];
-      const clipB = ordered.find((c) => c.start >= tr.start - 1) ?? ordered[1] ?? clipA;
+      // Prefer the clip ids captured when the transition was created — only
+      // fall back to guessing from track position if a clip was since
+      // deleted and the reference has gone stale.
+      const clipIds = new Set(input.clips.map((c) => c.id));
+      let clipAId = tr.clipAId;
+      let clipBId = tr.clipBId;
+      if (!clipIds.has(clipAId) || !clipIds.has(clipBId)) {
+        const ordered = input.clips.filter((c) => c.track === tr.track).sort((a, b) => a.start - b.start);
+        const clipA = [...ordered].reverse().find((c) => c.start + c.width <= tr.start + 1) ?? ordered[0];
+        const clipB = ordered.find((c) => c.start >= tr.start - 1) ?? ordered[1] ?? clipA;
+        clipAId = clipA?.id ?? "";
+        clipBId = clipB?.id ?? clipA?.id ?? "";
+      }
       return {
         id: tr.id,
         type: transitionType(tr.kind),
-        clipAId: clipA?.id ?? "",
-        clipBId: clipB?.id ?? clipA?.id ?? "",
+        clipAId,
+        clipBId,
         durationMs: Math.max(1, Math.round(tr.duration * 1000)),
       };
     }).filter((tr) => tr.clipAId && tr.clipBId),
@@ -405,6 +415,8 @@ export function timelineDocumentToEditorState(doc: TimelineDocument): {
       track: trackNum,
       start: startPx,
       duration: tr.durationMs / 1000,
+      clipAId: tr.clipAId,
+      clipBId: tr.clipBId,
     };
   });
 

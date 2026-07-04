@@ -588,7 +588,7 @@ export function Timeline() {
                           onSelect={() => existing && selectTransition(existing.id)}
                           onDropTransition={(kind) => {
                             if (existing) return;
-                            addTransition({ kind, track: t.id, start: c.start + c.width, duration: 0.6 });
+                            addTransition({ kind, track: t.id, start: c.start + c.width, duration: 0.6, clipAId: c.id, clipBId: next.id });
                             toast.success("Transition added");
                           }}
                         />
