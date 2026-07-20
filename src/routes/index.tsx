@@ -526,7 +526,8 @@ function DownloadCTA() {
                 Download Video Studio for Windows — free, offline, and ready in under 2 minutes.
               </p>
               <a
-                href="#"
+                href="https://github.com/SanthoshGRao/Landing-Page/releases/download/v1.0.0/Video.Studio.Setup.1.0.0.exe"
+                download
                 className="mt-10 inline-flex items-center gap-3 rounded-2xl bg-black/90 px-8 py-5 text-lg md:text-xl font-semibold text-white ring-1 ring-white/20 shadow-[0_30px_80px_-20px_rgba(0,0,0,0.6)] hover:scale-[1.03] hover:bg-black transition-all"
               >
                 <WindowsIcon className="h-6 w-6" />
