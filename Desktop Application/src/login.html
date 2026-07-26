@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Sign in — Video Studio</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg:          #111113;
+    --surface:     #1a1a1d;
+    --input-bg:    #1e1e21;
+    --border:      #2e2e32;
+    --border-focus:#2E8F63;
+    --accent:      #2E8F63;
+    --accent-hover:#4FAD7E;
+    --text:        #eae6e1;
+    --text-sub:    #9a9590;
+    --text-muted:  #6a6560;
+    --text-dim:    #4a4540;
+    --danger:      #cf6b6b;
+    --font:        "Segoe UI Variable", "Segoe UI", system-ui, -apple-system, sans-serif;
+  }
+
+  html, body {
+    height: 100%;
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+    overflow-y: auto;
+  }
+
+  .titlebar {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 44px;
+    padding: 0 16px;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    -webkit-app-region: drag;
+  }
+
+  .titlebar h1 {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-sub);
+    letter-spacing: -0.01em;
+  }
+
+  .titlebar-close {
+    -webkit-app-region: no-drag;
+    width: 28px;
+    height: 28px;
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+  }
+  .titlebar-close:hover {
+    background: rgba(207, 107, 107, 0.15);
+    color: var(--danger);
+  }
+
+  .content {
+    padding: 28px 32px 40px;
+    max-width: 460px;
+    margin: 0 auto;
+  }
+
+  .header-icon {
+    width: 40px;
+    height: 40px;
+    border: 2px solid var(--accent);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px;
+    box-shadow: 0 0 20px rgba(46, 143, 99, 0.12);
+  }
+
+  .header-icon .play {
+    width: 0;
+    height: 0;
+    border-left: 12px solid var(--accent);
+    border-top: 7px solid transparent;
+    border-bottom: 7px solid transparent;
+    margin-left: 2px;
+  }
+
+  .page-title {
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 4px;
+    text-align: center;
+  }
+
+  .page-desc {
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.5;
+    margin-bottom: 28px;
+    text-align: center;
+  }
+
+  .section { margin-bottom: 20px; }
+
+  .field { margin-bottom: 16px; }
+  .field:last-child { margin-bottom: 0; }
+
+  .field label {
+    display: block;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-sub);
+    margin-bottom: 6px;
+  }
+
+  .field input {
+    width: 100%;
+    height: 40px;
+    padding: 0 12px;
+    font-family: "Cascadia Code", "Consolas", monospace;
+    font-size: 12px;
+    color: var(--text);
+    background: var(--input-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .field input:focus {
+    border-color: var(--border-focus);
+    box-shadow: 0 0 0 3px rgba(46, 143, 99, 0.1);
+  }
+
+  .field .hint {
+    font-size: 10px;
+    color: var(--text-dim);
+    margin-top: 4px;
+    line-height: 1.4;
+  }
+  .field .hint a { color: var(--accent); text-decoration: none; }
+  .field .hint a:hover { text-decoration: underline; }
+
+  .btn {
+    width: 100%;
+    height: 42px;
+    padding: 0 20px;
+    font-family: var(--font);
+    font-size: 13px;
+    font-weight: 600;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #1a1a1d;
+    box-shadow: 0 1px 3px rgba(46, 143, 99, 0.25);
+  }
+  .btn-primary:hover { background: var(--accent-hover); box-shadow: 0 2px 8px rgba(46, 143, 99, 0.35); }
+  .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+    margin-top: 10px;
+  }
+  .btn-ghost:hover { background: rgba(255, 255, 255, 0.04); color: var(--text-sub); }
+
+  .status-msg {
+    font-size: 11px;
+    font-weight: 500;
+    margin-top: 14px;
+    text-align: center;
+  }
+  .status-msg.error { color: var(--danger); }
+  .status-msg.info { color: var(--text-muted); }
+
+  .divider {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--text-dim);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin: 20px 0;
+  }
+  .divider::before, .divider::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+  <div class="titlebar">
+    <h1>Sign in</h1>
+    <button class="titlebar-close" id="closeBtn" title="Quit">✕</button>
+  </div>
+
+  <div class="content">
+    <div class="header-icon"><div class="play"></div></div>
+    <h2 class="page-title">Sign in to Video Studio</h2>
+    <p class="page-desc">
+      Your Google account is used to identify your local projects — nothing
+      leaves this machine except the sign-in itself.
+    </p>
+
+    <button class="btn btn-primary" id="signInBtn">Sign in with Google</button>
+    <button class="btn btn-ghost" id="quitBtn">Quit</button>
+
+    <p class="status-msg" id="statusMsg"></p>
+  </div>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const signInBtn = $("signInBtn");
+    const quitBtn = $("quitBtn");
+    const closeBtn = $("closeBtn");
+    const statusMsg = $("statusMsg");
+
+    function setStatus(text, kind) {
+      statusMsg.textContent = text || "";
+      statusMsg.className = "status-msg" + (kind ? " " + kind : "");
+    }
+
+    signInBtn.addEventListener("click", async () => {
+      signInBtn.disabled = true;
+      setStatus("Opening your browser to sign in with Google…", "info");
+
+      try {
+        const profile = await window.desktopAPI.signInWithGoogle();
+        await window.desktopAPI.saveConfig({
+          googleSub: profile.sub,
+          googleEmail: profile.email,
+          googleName: profile.name || undefined,
+          googlePicture: profile.picture || undefined,
+        });
+        setStatus("Signed in as " + profile.email, "info");
+        window.desktopAPI.completeSignIn();
+      } catch (err) {
+        setStatus(err && err.message ? err.message : "Sign-in failed.", "error");
+        signInBtn.disabled = false;
+      }
+    });
+
+    quitBtn.addEventListener("click", () => {
+      if (window.desktopAPI) window.desktopAPI.quit();
+    });
+    closeBtn.addEventListener("click", () => {
+      if (window.desktopAPI) window.desktopAPI.quit();
+    });
+  </script>
+
+</body>
+</html>

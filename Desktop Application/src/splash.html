@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Video Studio</title>
+<style>
+  /* ──────────────────────────────────────────────────
+     Splash Screen — warm, professional creative-tool aesthetic
+     Charcoal + copper/bronze. No purple. No AI sparkles.
+     ────────────────────────────────────────────────── */
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg:          #111113;
+    --surface:     #1a1a1d;
+    --border:      #2a2a2e;
+    --accent:      #2E8F63;
+    --accent-dim:  rgba(46, 143, 99, 0.35);
+    --text:        #eae6e1;
+    --text-sub:    #8a8580;
+    --text-muted:  #5a5550;
+    --danger:      #cf6b6b;
+    --font:        "Segoe UI Variable", "Segoe UI", system-ui, -apple-system, sans-serif;
+  }
+
+  html, body {
+    height: 100%;
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+    user-select: none;
+    overflow: hidden;
+  }
+
+  body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    -webkit-app-region: drag;
+  }
+
+  /* Subtle warm ambient glow */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 70% 50% at 30% 25%, rgba(46, 143, 99, 0.05), transparent 60%),
+      radial-gradient(ellipse 50% 40% at 75% 70%, rgba(46, 143, 99, 0.03), transparent 50%);
+    pointer-events: none;
+  }
+
+  /* Thin border frame */
+  body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    border: 1px solid var(--border);
+    border-radius: 0;
+    pointer-events: none;
+  }
+
+  /* ── Logo icon ── */
+  .logo {
+    position: relative;
+    width: 64px;
+    height: 64px;
+    margin-bottom: 20px;
+  }
+
+  .logo-frame {
+    width: 64px;
+    height: 64px;
+    border: 2.5px solid var(--accent);
+    border-radius: 16px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 30px var(--accent-dim), inset 0 0 20px rgba(46, 143, 99, 0.06);
+  }
+
+  /* Play triangle */
+  .logo-play {
+    width: 0;
+    height: 0;
+    border-left: 18px solid var(--accent);
+    border-top: 11px solid transparent;
+    border-bottom: 11px solid transparent;
+    margin-left: 4px;
+  }
+
+  /* Film perforations */
+  .logo-frame::before,
+  .logo-frame::after {
+    content: "";
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    border-radius: 1px;
+    background: var(--accent);
+    opacity: 0.5;
+  }
+  .logo-frame::before { top: 8px; left: 8px; }
+  .logo-frame::after  { bottom: 8px; right: 8px; }
+
+  /* ── Typography ── */
+  .title {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--text);
+    line-height: 1;
+  }
+
+  .subtitle {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-top: 6px;
+    opacity: 0.85;
+  }
+
+  /* ── Status area ── */
+  .status-area {
+    margin-top: 40px;
+    text-align: center;
+    min-height: 50px;
+  }
+
+  .status-text {
+    font-size: 12px;
+    color: var(--text-sub);
+    font-weight: 400;
+    transition: opacity 0.3s ease;
+  }
+
+  .status-text.error {
+    color: var(--danger);
+    font-size: 11px;
+    line-height: 1.6;
+    max-width: 360px;
+    white-space: pre-wrap;
+    text-align: center;
+  }
+
+  /* ── Progress bar ── */
+  .progress-track {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--surface);
+  }
+
+  .progress-bar {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--accent), #4FAD7E);
+    border-radius: 0 2px 2px 0;
+    transition: width 0.6s cubic-bezier(0.25, 0.8, 0.25, 1);
+  }
+
+  /* ── Version ── */
+  .version {
+    position: fixed;
+    bottom: 12px;
+    right: 16px;
+    font-size: 9px;
+    color: var(--text-muted);
+    font-weight: 500;
+    letter-spacing: 0.05em;
+  }
+
+  /* ── Pulse animation for the logo ── */
+  @keyframes gentle-pulse {
+    0%, 100% { box-shadow: 0 0 30px var(--accent-dim), inset 0 0 20px rgba(46, 143, 99, 0.06); }
+    50%      { box-shadow: 0 0 40px var(--accent-dim), inset 0 0 25px rgba(46, 143, 99, 0.08); }
+  }
+
+  .logo-frame {
+    animation: gentle-pulse 3s ease-in-out infinite;
+  }
+</style>
+</head>
+<body>
+
+  <div class="logo">
+    <div class="logo-frame">
+      <div class="logo-play"></div>
+    </div>
+  </div>
+
+  <h1 class="title">Video Studio</h1>
+  <p class="subtitle">Desktop Edition</p>
+
+  <div class="status-area">
+    <p class="status-text" id="statusText">Initializing…</p>
+  </div>
+
+  <div class="progress-track">
+    <div class="progress-bar" id="progressBar"></div>
+  </div>
+
+  <span class="version">v1.0.0</span>
+
+  <script>
+    const statusEl = document.getElementById("statusText");
+    const barEl = document.getElementById("progressBar");
+
+    if (window.desktopAPI) {
+      window.desktopAPI.onStatus((status, progress) => {
+        statusEl.textContent = status;
+        statusEl.className = "status-text";
+        barEl.style.width = Math.min(100, Math.max(0, progress)) + "%";
+      });
+
+      window.desktopAPI.onError((message) => {
+        statusEl.textContent = message;
+        statusEl.className = "status-text error";
+        barEl.style.width = "100%";
+        barEl.style.background = "#cf6b6b";
+      });
+    }
+  </script>
+
+</body>
+</html>

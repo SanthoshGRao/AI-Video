@@ -1,0 +1,33 @@
+{
+  "name": "video-studio-desktop",
+  "version": "1.0.0",
+  "description": "Video Studio — Desktop Edition",
+  "private": true,
+  "main": "dist/main.js",
+  "scripts": {
+    "compile": "tsc",
+    "copy-static": "node scripts/copy-static.js",
+    "build": "npm run compile && npm run copy-static",
+    "dev": "node scripts/dev.js",
+    "dev:fast": "node scripts/dev.js --skip-web",
+    "dev:clean": "node scripts/dev.js --force-web",
+    "build:web": "node scripts/build-web.js --force",
+    "start": "electron .",
+    "package": "node scripts/package.mjs",
+    "postinstall": "electron-builder install-app-deps"
+  },
+  "dependencies": {
+    "@paralleldrive/cuid2": "^2.2.2",
+    "electron-updater": "^6.8.9",
+    "embedded-postgres": "^17.10.0-beta.17",
+    "google-auth-library": "^10.9.0",
+    "pg": "^8.13.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.0",
+    "@types/pg": "^8.11.10",
+    "electron": "^35.0.0",
+    "electron-builder": "^26.0.0",
+    "typescript": "^5.8.0"
+  }
+}
