@@ -34,6 +34,11 @@ export function initAutoUpdater(mainWindow: BrowserWindow): void {
   // Configure autoUpdater
   autoUpdater.autoDownload = false;
   autoUpdater.autoInstallOnAppQuit = true;
+  // NOTE: do not set `forceDevUpdateConfig` here. It makes electron-updater
+  // read `dev-app-update.yml` from app.getAppPath() instead of the
+  // `app-update.yml` electron-builder writes into resources/, and that file
+  // isn't in the `files` list — so in a packaged build every check failed
+  // with ENOENT and the app could never see a new release.
 
   // Logging
   autoUpdater.logger = console;

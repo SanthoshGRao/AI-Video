@@ -103,9 +103,10 @@ module.exports = {
   },
 
   nsis: {
-    oneClick: false,
+    artifactName: "Video-Studio-Setup-${version}.${ext}",
+    oneClick: true,
     perMachine: false,
-    allowToChangeInstallationDirectory: true,
+    allowToChangeInstallationDirectory: false,
     installerIcon: "build/icon.ico",
     uninstallerIcon: "build/icon.ico",
     installerHeaderIcon: "build/icon.ico",

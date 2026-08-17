@@ -13,6 +13,7 @@
  * child process needs.
  */
 
+import crypto from "crypto";
 import fs from "fs";
 import path from "path";
 import { app } from "electron";
@@ -119,9 +120,48 @@ function loadEnvFile(filePath: string): Record<string, string> {
  */
 const OAUTH_CLIENT_DEFAULTS: AppConfig = {
   googleClientId:
-    "983288740045-1n2vactmqqjcu18214e7t7d02camapsn.apps.googleusercontent.com",
-  googleClientSecret: "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",
+    "858992570133-cmsit4q743jufpngdobbmbr06slp05vf.apps.googleusercontent.com",
 };
+
+/**
+ * Credentials that get baked into a build but must never be committed.
+ * `secrets.json` sits next to package.json, is gitignored, and is copied
+ * into dist/ by scripts/copy-static.js at build time — see
+ * secrets.example.json for the shape.
+ *
+ * This repository is public, which makes an in-source credential a
+ * self-inflicted outage: GitHub's push protection rejects the commit, and
+ * anything that slips through gets scraped and auto-revoked. That is how the
+ * previous Gemini key died — the SHA-256 eviction list in readSavedConfig
+ * below is the cleanup for it.
+ *
+ * A missing file is a supported state. The OAuth client id above is not
+ * secret (RFC 8252 assumes installed apps cannot keep one, which is why
+ * gcloud and the GitHub CLI ship theirs too), so only the client *secret*
+ * and the AI keys live here; without them the app falls back to the AI relay
+ * or to keys entered in Settings.
+ */
+function loadBakedSecrets(): AppConfig {
+  try {
+    const raw = fs.readFileSync(path.join(__dirname, "secrets.json"), "utf-8");
+    const parsed = JSON.parse(raw) as AppConfig;
+    // Only ever honour credentials from here — never identity or DB config.
+    const allowed = [
+      "googleClientId",
+      "googleClientSecret",
+      "googleAiApiKey",
+      "openaiApiKey",
+      "groqApiKey",
+    ] as const;
+    const out: AppConfig = {};
+    for (const field of allowed) {
+      if (parsed[field]) out[field] = parsed[field];
+    }
+    return out;
+  } catch {
+    return {};
+  }
+}
 
 /**
  * Base URL of the hosted AI relay (the standalone "Relay Server/" app
@@ -158,7 +198,7 @@ function loadDefaults(): AppConfig {
   if (envVars.GOOGLE_CLIENT_ID) overrides.googleClientId = envVars.GOOGLE_CLIENT_ID;
   if (envVars.GOOGLE_CLIENT_SECRET) overrides.googleClientSecret = envVars.GOOGLE_CLIENT_SECRET;
 
-  return { ...OAUTH_CLIENT_DEFAULTS, ...overrides };
+  return { ...OAUTH_CLIENT_DEFAULTS, ...loadBakedSecrets(), ...overrides };
 }
 
 const BAKED_IN_DEFAULTS = loadDefaults();
@@ -186,10 +226,36 @@ export function storagePath(): string {
 /*  Read / Write                                                       */
 /* ------------------------------------------------------------------ */
 
+/**
+ * SHA-256 of AI keys that shipped as a baked-in default and have since been
+ * revoked. An earlier build wrote its baked key into every user's
+ * config.json, and because saved values win over defaults, those users stayed
+ * pinned to a dead key long after it was replaced — the app looked broken and
+ * no update could fix it. Matching keys are evicted on read so the current
+ * baked default takes over.
+ *
+ * Stored as digests rather than literals: this repository is public, and a
+ * key-shaped string in source is what secret scanners (rightly) reject.
+ */
+const REVOKED_KEY_HASHES = new Set([
+  // Gemini key baked into builds up to 1.1.3
+  "b01f86bcbbb96ce7374375ce1b2a6906b9a92c75936cf45e3609040c8fb5634d",
+]);
+
+function isRevoked(key: string | undefined): boolean {
+  if (!key) return false;
+  return REVOKED_KEY_HASHES.has(
+    crypto.createHash("sha256").update(key).digest("hex")
+  );
+}
+
 function readSavedConfig(): AppConfig {
   try {
     const raw = fs.readFileSync(configPath(), "utf-8");
-    return JSON.parse(raw) as AppConfig;
+    const parsed = JSON.parse(raw) as AppConfig;
+    if (isRevoked(parsed.googleAiApiKey)) delete parsed.googleAiApiKey;
+    if (isRevoked(parsed.openaiApiKey)) delete parsed.openaiApiKey;
+    return parsed;
   } catch {
     return {};
   }

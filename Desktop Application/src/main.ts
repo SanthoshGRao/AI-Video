@@ -380,7 +380,14 @@ async function boot(): Promise<void> {
   // token, so AI calls route through the hosted relay instead. Re-prompts
   // if the relay token is missing/expired, since re-minting needs a fresh
   // Google ID token.
-  const needsRelay = !hasRequiredKeys(config);
+  //
+  // "Needs the relay" is specifically about OpenAI, not about having *some*
+  // AI key: script generation and photo analysis go through OpenAI (see the
+  // web app's src/lib/ai/client.ts), and nothing else can stand in for it.
+  // Checking `hasRequiredKeys` here instead was satisfied by the baked-in
+  // Gemini key, so the relay token silently never got minted and every
+  // OpenAI-backed feature failed with an auth error.
+  const needsRelay = !config.openaiApiKey?.trim();
   if (!hasSignedInProfile(config) || (needsRelay && !hasValidRelayToken(config))) {
     updateSplash("Waiting for sign-in…", 10);
     config = await showLoginAndWait();
@@ -446,26 +453,24 @@ async function boot(): Promise<void> {
     // Non-fatal — schema may already be up to date from a previous launch
   }
 
-  // Seed property templates + prompt chips, but only once — the seed
-  // script unconditionally wipes and recreates prompt chips every run.
-  // If schema push failed, skip seeding entirely (it would fail too).
-  const seedMarker = path.join(app.getPath("userData"), ".seeded");
-  if (!fs.existsSync(seedMarker)) {
-    if (!schemaPushOk) {
-      console.warn("[boot] Skipping seed — schema push failed earlier");
-      updateSplash("⚠ Skipped template loading (schema issue)", 47);
-    } else {
-      updateSplash("Loading project templates…", 47);
-      try {
-        await seedDatabase(webAppDir, serverEnv);
-        fs.writeFileSync(seedMarker, new Date().toISOString());
-      } catch (err: any) {
-        const msg = err?.message || "Unknown error";
-        console.warn("[boot] Seeding templates failed:", msg);
-        updateSplash(`⚠ Template loading issue: ${msg.slice(0, 80)}`, 48);
-        // Non-fatal — user can still use the app, just without templates.
-        // Don't write the seed marker so it retries next launch.
-      }
+  // Seed property templates + prompt chips on every launch. The seed is
+  // pure `INSERT ... ON CONFLICT DO NOTHING` now, so re-running it is a
+  // cheap no-op once the rows exist — and it self-heals a database left
+  // half-populated by an earlier build. (It used to be gated behind a
+  // `.seeded` marker file, which meant one failed seed was permanent.)
+  // If schema push failed, skip it entirely — it would only fail too.
+  if (!schemaPushOk) {
+    console.warn("[boot] Skipping seed — schema push failed earlier");
+    updateSplash("⚠ Skipped template loading (schema issue)", 47);
+  } else {
+    updateSplash("Loading project templates…", 47);
+    try {
+      await seedDatabase(webAppDir, serverEnv);
+    } catch (err: any) {
+      const msg = err?.message || "Unknown error";
+      console.warn("[boot] Seeding templates failed:", msg);
+      updateSplash(`⚠ Template loading issue: ${msg.slice(0, 80)}`, 48);
+      // Non-fatal — user can still use the app, just without templates.
     }
   }
 

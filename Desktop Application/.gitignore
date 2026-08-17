@@ -5,3 +5,6 @@ release/
 *.js.map
 .env
 .env.local
+
+# Baked build secrets — real file must never be committed (public repo)
+secrets.json
