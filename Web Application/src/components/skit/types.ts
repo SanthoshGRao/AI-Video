@@ -59,10 +59,10 @@ export function describeStyle(a: CastAssignment): string {
     : findStylePreset(a.styleId)?.label ?? "Voice default";
 
   const mods: string[] = [];
-  if (a.pitch === 1) mods.push("High Pitch 🤪");
-  else if (a.pitch === 2) mods.push("Cartoon Pitch 🤡");
-  else if (a.pitch === -1) mods.push("Low Pitch 🔉");
-  else if (a.pitch === -2) mods.push("Deep Pitch 🔊");
+  if (a.pitch === 1) mods.push("High Pitch");
+  else if (a.pitch === 2) mods.push("Cartoon Pitch");
+  else if (a.pitch === -1) mods.push("Low Pitch");
+  else if (a.pitch === -2) mods.push("Deep Pitch");
 
   if (a.emotion && a.emotion !== "normal") {
     const emoLabel = a.emotion.charAt(0).toUpperCase() + a.emotion.slice(1);

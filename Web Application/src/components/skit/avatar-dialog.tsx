@@ -39,13 +39,13 @@ const STYLE_CARD_IDLE = "border-slate-200 hover:border-indigo-200 hover:bg-slate
 function getPitchLabel(pitch: number): string {
   switch (pitch) {
     case 2:
-      return "Cartoon Squeaky (+2) 🤡";
+      return "Cartoon Squeaky (+2)";
     case 1:
-      return "High Pitch / Funny (+1) 🤪";
+      return "High Pitch / Funny (+1)";
     case -1:
-      return "Low Pitch (-1) 🔉";
+      return "Low Pitch (-1)";
     case -2:
-      return "Deep Bass (-2) 🔊";
+      return "Deep Bass (-2)";
     default:
       return "Normal Pitch (0)";
   }
@@ -374,11 +374,11 @@ export function AvatarDialog({
                 {/* Pitch Preset Quick Buttons */}
                 <div className="grid grid-cols-5 gap-1.5 pt-1">
                   {[
-                    { val: -2, label: "Deep", icon: "🔊" },
-                    { val: -1, label: "Low", icon: "🔉" },
-                    { val: 0, label: "Normal", icon: "🎙️" },
-                    { val: 1, label: "High / Funny", icon: "🤪" },
-                    { val: 2, label: "Cartoon", icon: "🤡" },
+                    { val: -2, label: "Deep" },
+                    { val: -1, label: "Low" },
+                    { val: 0, label: "Normal" },
+                    { val: 1, label: "High / Funny" },
+                    { val: 2, label: "Cartoon" },
                   ].map((p) => (
                     <button
                       key={p.val}
@@ -391,7 +391,6 @@ export function AvatarDialog({
                           : "bg-white text-slate-700 border-slate-200 hover:border-indigo-300 hover:bg-slate-50"
                       )}
                     >
-                      <span className="text-base leading-none">{p.icon}</span>
                       <span className="truncate text-[11px] font-medium">{p.label}</span>
                     </button>
                   ))}
@@ -444,12 +443,12 @@ export function AvatarDialog({
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                   {[
                     { id: "normal", label: "Default", tagline: "Standard natural tone" },
-                    { id: "funny", label: "Funny / Humorous 🤪", tagline: "Playful comic delivery" },
-                    { id: "excited", label: "Excited ⚡", tagline: "High energy & joy" },
-                    { id: "dramatic", label: "Dramatic 🎭", tagline: "Intense theatrical read" },
-                    { id: "whispering", label: "Whispering 🤫", tagline: "Soft & quiet voice" },
-                    { id: "sarcastic", label: "Sarcastic 😏", tagline: "Playful ironic tone" },
-                    { id: "robotic", label: "Robotic 🤖", tagline: "Monotone mechanical read" },
+                    { id: "funny", label: "Funny / Humorous", tagline: "Playful comic delivery" },
+                    { id: "excited", label: "Excited", tagline: "High energy & joy" },
+                    { id: "dramatic", label: "Dramatic", tagline: "Intense theatrical read" },
+                    { id: "whispering", label: "Whispering", tagline: "Soft & quiet voice" },
+                    { id: "sarcastic", label: "Sarcastic", tagline: "Playful ironic tone" },
+                    { id: "robotic", label: "Robotic", tagline: "Monotone mechanical read" },
                   ].map((emo) => {
                     const active = (value.emotion ?? "normal") === emo.id;
                     return (
