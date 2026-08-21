@@ -31,6 +31,12 @@ export interface AppConfig {
   groqApiKey?: string;
   /** If set, use this Postgres connection string instead of embedded */
   databaseUrl?: string;
+  /** Cloudflare R2 Object Storage credentials for media files */
+  r2Bucket?: string;
+  r2AccountId?: string;
+  r2AccessKey?: string;
+  r2SecretKey?: string;
+  r2PublicUrl?: string;
   /** Override the Next.js server port (default 3100) */
   port?: number;
 
@@ -197,6 +203,12 @@ function loadDefaults(): AppConfig {
   if (envVars.GROQ_API_KEY) overrides.groqApiKey = envVars.GROQ_API_KEY;
   if (envVars.GOOGLE_CLIENT_ID) overrides.googleClientId = envVars.GOOGLE_CLIENT_ID;
   if (envVars.GOOGLE_CLIENT_SECRET) overrides.googleClientSecret = envVars.GOOGLE_CLIENT_SECRET;
+  if (envVars.DATABASE_URL) overrides.databaseUrl = envVars.DATABASE_URL;
+  if (envVars.CLOUDFLARE_R2_BUCKET) overrides.r2Bucket = envVars.CLOUDFLARE_R2_BUCKET;
+  if (envVars.CLOUDFLARE_R2_ACCOUNT_ID) overrides.r2AccountId = envVars.CLOUDFLARE_R2_ACCOUNT_ID;
+  if (envVars.CLOUDFLARE_R2_ACCESS_KEY) overrides.r2AccessKey = envVars.CLOUDFLARE_R2_ACCESS_KEY;
+  if (envVars.CLOUDFLARE_R2_SECRET_KEY) overrides.r2SecretKey = envVars.CLOUDFLARE_R2_SECRET_KEY;
+  if (envVars.CLOUDFLARE_R2_PUBLIC_URL) overrides.r2PublicUrl = envVars.CLOUDFLARE_R2_PUBLIC_URL;
 
   return { ...OAUTH_CLIENT_DEFAULTS, ...loadBakedSecrets(), ...overrides };
 }
@@ -296,9 +308,9 @@ export function hasGoogleCredentials(config: AppConfig): boolean {
   return !!(config.googleClientId?.trim() && config.googleClientSecret?.trim());
 }
 
-/** A previously-completed Google sign-in is cached — no need to re-open the browser. */
+/** A previously-completed sign-in profile exists — no need to re-open login window. */
 export function hasSignedInProfile(config: AppConfig): boolean {
-  return !!(config.googleSub?.trim() && config.googleEmail?.trim());
+  return !!(config.googleEmail?.trim() || config.googleSub?.trim());
 }
 
 /** An unexpired relay token is cached — no need to re-mint one before starting the server. */
@@ -381,6 +393,23 @@ export function buildServerEnv(
   }
   if (config.groqApiKey?.trim()) {
     env.GROQ_API_KEY = config.groqApiKey.trim();
+  }
+
+  // Cloudflare R2 Storage credentials for media sync
+  if (config.r2Bucket?.trim()) {
+    env.CLOUDFLARE_R2_BUCKET = config.r2Bucket.trim();
+  }
+  if (config.r2AccountId?.trim()) {
+    env.CLOUDFLARE_R2_ACCOUNT_ID = config.r2AccountId.trim();
+  }
+  if (config.r2AccessKey?.trim()) {
+    env.CLOUDFLARE_R2_ACCESS_KEY = config.r2AccessKey.trim();
+  }
+  if (config.r2SecretKey?.trim()) {
+    env.CLOUDFLARE_R2_SECRET_KEY = config.r2SecretKey.trim();
+  }
+  if (config.r2PublicUrl?.trim()) {
+    env.CLOUDFLARE_R2_PUBLIC_URL = config.r2PublicUrl.trim();
   }
 
   // No local keys, but signed in with a valid relay token — route AI

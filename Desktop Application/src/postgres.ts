@@ -104,10 +104,14 @@ export async function startEmbeddedPostgres(): Promise<string> {
  */
 export async function stopEmbeddedPostgres(): Promise<void> {
   if (!instance) return;
-  try {
-    await instance.stop();
-  } catch (err) {
-    console.error("[postgres] Failed to stop cleanly:", err);
-  }
+  const current = instance;
   instance = null;
+  try {
+    const res = current.stop();
+    if (res && typeof res.catch === "function") {
+      res.catch(() => {});
+    }
+  } catch {
+    // Suppress non-fatal embedded-postgres cleanup error
+  }
 }

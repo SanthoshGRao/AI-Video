@@ -1,0 +1,672 @@
+// ============================================
+// Prisma Schema — AI Real Estate Video Generator
+// ============================================
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ============================================
+// USER
+// ============================================
+
+model User {
+  id           String   @id @default(cuid())
+  clerkId      String?  @unique
+  googleId     String?  @unique
+  email        String   @unique
+  passwordHash String?
+  licenseKey   String?  @unique
+  name         String?
+  avatarUrl    String?
+  plan         Plan     @default(FREE)
+  creditsUsed  Int      @default(0)
+  creditsLimit Int      @default(100)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  projects                 Project[]
+  brandKit                 BrandKit?
+  analyticsEvents          AnalyticsEvent[]
+  mediaAssets              MediaAsset[]
+  mediaFolders             MediaFolder[]
+  connectedSocialAccounts ConnectedSocialAccount[]
+  customFonts              CustomFont[]
+  fontUsages               FontUsage[]
+  voiceStylePresets        VoiceStylePreset[]
+  characterBundles         CharacterBundle[]
+  ownedWorkspaces          Workspace[]       @relation("WorkspaceOwner")
+  workspaceMemberships     WorkspaceMember[]
+
+  @@map("users")
+}
+
+enum Plan {
+  FREE
+  PRO
+  ENTERPRISE
+}
+
+// ============================================
+// BRAND KIT
+// ============================================
+
+model BrandKit {
+  id             String   @id @default(cuid())
+  userId         String   @unique
+  companyName    String?
+  logoUrl        String?
+  logoR2Key      String?
+  watermarkUrl   String?
+  watermarkR2Key String?
+  primaryColor   String   @default("#0F172A")
+  secondaryColor String   @default("#6366F1")
+  accentColor    String   @default("#F59E0B")
+  fontFamily     String   @default("Inter")
+  phoneNumber    String?
+  whatsappNumber String?
+  ctaFooter      String?
+  website        String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("brand_kits")
+}
+
+// ============================================
+// PROPERTY TEMPLATE
+// ============================================
+
+model PropertyTemplate {
+  id              String   @id @default(cuid())
+  slug            String   @unique
+  name            String
+  description     String
+  icon            String
+  focusAreas      String[] // e.g. ["tree_count", "water", "yield_potential"]
+  aiSystemPrompt  String   @db.Text
+  scriptStrategy  String   @db.Text
+  socialFormat    String   @db.Text
+  ctaStyle        String   @db.Text
+  hashtagStrategy String   @db.Text
+  sampleInput     String?  @db.Text
+  isActive        Boolean  @default(true)
+  sortOrder       Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  projects Project[]
+
+  @@map("property_templates")
+}
+
+// ============================================
+// PROMPT CHIP
+// ============================================
+
+model PromptChip {
+  id        String       @id @default(cuid())
+  label     String
+  prompt    String
+  category  ChipCategory
+  icon      String?
+  sortOrder Int          @default(0)
+  isActive  Boolean      @default(true)
+  createdAt DateTime     @default(now())
+
+  @@map("prompt_chips")
+}
+
+enum ChipCategory {
+  TONE
+  AUDIENCE
+  STYLE
+  FEATURE
+}
+
+// ============================================
+// PROJECT
+// ============================================
+
+model Project {
+  id              String        @id @default(cuid())
+  userId          String
+  workspaceId     String?
+  templateId      String?
+  title           String
+  status          ProjectStatus @default(DRAFT)
+  propertyData    Json? // Raw user input
+  extractedFacts  Json? // AI-parsed structured facts
+  validatedFacts  Json? // Validated facts after verification
+  targetAudience  String?
+  language        String        @default("kannada_english")
+  tone            String        @default("professional")
+  ctaStyle        String        @default("standard")
+  durationSeconds Int           @default(60)
+  lastSavedAt     DateTime      @default(now())
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  user      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspace Workspace?         @relation(fields: [workspaceId], references: [id], onDelete: SetNull)
+  template  PropertyTemplate? @relation(fields: [templateId], references: [id])
+
+  scriptVersions    ScriptVersion[]
+  audioAssets       AudioAsset[]
+  mediaAssets       MediaAsset[]
+  mediaFolders      MediaFolder[]
+  contentPacks      ContentPack[]
+  timelines         Timeline[]
+  subtitleTracks    SubtitleTrack[]
+  exportJobs        ExportJob[]
+  recoverySnapshots RecoverySnapshot[]
+
+  @@index([userId])
+  @@index([workspaceId])
+  @@index([status])
+  @@map("projects")
+}
+
+enum ProjectStatus {
+  DRAFT
+  CONTENT_READY
+  MEDIA_UPLOADED
+  EDITING
+  RENDERING
+  EXPORTED
+  ARCHIVED
+}
+
+// ============================================
+// SCRIPT VERSION
+// ============================================
+
+model ScriptVersion {
+  id                String   @id @default(cuid())
+  projectId         String
+  generationBatch   Int      @default(1) // Increments each "Generate scripts" run
+  versionNumber     Int // Monotonic per project across all generations
+  variationStyle    String // e.g. "premium_professional", "investment_focus"
+  content           String   @db.Text
+  language          String   @default("kannada_english")
+  wordCount         Int      @default(0)
+  estimatedDuration Int      @default(0) // seconds
+  isApproved        Boolean  @default(false)
+  isActive          Boolean  @default(false)
+  factCheckPassed   Boolean  @default(false)
+  factCheckReport   Json? // Validation details
+  createdAt         DateTime @default(now())
+
+  project     Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  audioAssets AudioAsset[]
+
+  @@index([projectId])
+  @@index([projectId, generationBatch])
+  @@map("script_versions")
+}
+
+// ============================================
+// AUDIO ASSET
+// ============================================
+
+model AudioAsset {
+  id              String   @id @default(cuid())
+  projectId       String
+  scriptVersionId String?
+  voiceType       String // e.g. "male", "female", "premium_male"
+  voiceStyleLabel String? // Display label for the delivery style used, e.g. "Energetic Ad Read" or "Custom style"
+  localPath       String? // Absolute filesystem path under /storage
+  r2Key           String
+  r2Url           String
+  durationMs      Int
+  waveformData    Json? // Pre-computed peaks for WaveSurfer.js
+  wordTimestamps  Json? // Word-level sync: [{ word, start, end }]
+  createdAt       DateTime @default(now())
+
+  project        Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  scriptVersion  ScriptVersion?  @relation(fields: [scriptVersionId], references: [id])
+  subtitleTracks SubtitleTrack[]
+
+  @@index([projectId])
+  @@map("audio_assets")
+}
+
+// ============================================
+// MEDIA FOLDER
+// ============================================
+
+model MediaFolder {
+  id              String   @id @default(cuid())
+  userId          String?
+  projectId       String?
+  parentFolderId  String?
+  name            String
+  description     String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user            User?           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project         Project?        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  parentFolder    MediaFolder?    @relation("FolderHierarchy", fields: [parentFolderId], references: [id], onDelete: Cascade)
+  childFolders    MediaFolder[]   @relation("FolderHierarchy")
+  mediaAssets     MediaAsset[]
+
+  @@index([userId, projectId, parentFolderId])
+  @@index([parentFolderId])
+  @@map("media_folders")
+}
+
+// ============================================
+// MEDIA ASSET
+// ============================================
+
+model MediaAsset {
+  id             String    @id @default(cuid())
+  projectId      String?
+  userId         String?
+  mediaFolderId  String?
+  type           MediaType
+  originalName   String
+  localPath      String? // Absolute filesystem path under /storage
+  r2Key          String
+  r2Url          String
+  thumbnailUrl   String?
+  thumbnailR2Key String?
+  width          Int?
+  height         Int?
+  durationMs     Int? // For video files
+  fileSizeBytes  Int
+  mimeType       String
+  createdAt      DateTime  @default(now())
+
+  project        Project?      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user           User?         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  mediaFolder    MediaFolder?  @relation(fields: [mediaFolderId], references: [id], onDelete: SetNull)
+  mediaTags      MediaTag[]
+
+  @@index([projectId])
+  @@index([userId])
+  @@index([mediaFolderId])
+  @@map("media_assets")
+}
+
+enum MediaType {
+  IMAGE
+  VIDEO
+  DRONE
+  LOGO
+  DOCUMENT
+}
+
+// ============================================
+// MEDIA TAG (AI-detected)
+// ============================================
+
+model MediaTag {
+  id           String   @id @default(cuid())
+  mediaAssetId String
+  tag          String // e.g. "coconut_trees", "drone_shot", "entrance_gate"
+  confidence   Float    @default(0.0)
+  source       String   @default("ai") // "ai" or "manual"
+  createdAt    DateTime @default(now())
+
+  mediaAsset MediaAsset @relation(fields: [mediaAssetId], references: [id], onDelete: Cascade)
+
+  @@index([mediaAssetId])
+  @@index([tag])
+  @@map("media_tags")
+}
+
+// ============================================
+// CONTENT PACK (full marketing package)
+// ============================================
+
+model ContentPack {
+  id        String @id @default(cuid())
+  projectId String
+  version   Int    @default(1)
+
+  // Script variations stored in ScriptVersion table
+  // Social content:
+  instagramCaptions   Json? // Array of 3 captions
+  facebookCopies      Json? // Array of 2
+  whatsappCopies      Json? // Array of 3
+  telegramCopy        Json?
+  youtubeDescriptions Json? // Array of 2
+  ctaVariations       Json? // Array of 5
+  hashtagSets         Json? // { set10: [], set20: [], set30: [] }
+  seoMetadata         Json? // { title, description, keywords }
+  propertyHighlights  Json? // Array of highlights
+  googleBusinessPost  Json?
+  selectedPlatforms   Json? // Array of strings
+
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@map("content_packs")
+}
+
+// ============================================
+// TIMELINE
+// ============================================
+
+model Timeline {
+  id            String   @id @default(cuid())
+  projectId     String
+  version       Int
+  tracks        Json // Track[] — video, audio, text, subtitle tracks
+  clips         Json // Record<string, Clip>
+  transitions   Json? // Transition[]
+  textLayers    Json? // TextLayer[]
+  settings      Json? // Canvas size, FPS, etc.
+  isAutosave    Boolean  @default(false)
+  isAiGenerated Boolean  @default(false)
+  createdAt     DateTime @default(now())
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@map("timelines")
+}
+
+// ============================================
+// SUBTITLE TRACK
+// ============================================
+
+model SubtitleTrack {
+  id           String   @id @default(cuid())
+  projectId    String
+  audioAssetId String?
+  language     String   @default("kannada_english")
+  cues         Json // [{ id, startMs, endMs, text, words: [{ word, startMs, endMs }] }]
+  stylePreset  String   @default("instagram_reels")
+  customStyle  Json? // Custom font, size, color, position, animation
+  isBurntIn    Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  project    Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  audioAsset AudioAsset? @relation(fields: [audioAssetId], references: [id])
+
+  @@index([projectId])
+  @@map("subtitle_tracks")
+}
+
+// ============================================
+// EXPORT JOB
+// ============================================
+
+model ExportJob {
+  id             String       @id @default(cuid())
+  projectId      String
+  status         ExportStatus @default(QUEUED)
+  format         String       @default("mp4")
+  aspectRatio    String       @default("9:16")
+  resolution     String       @default("1080p")
+  subtitleBurnIn Boolean      @default(true)
+  watermark      Boolean      @default(false)
+  r2Key          String?
+  downloadUrl    String?
+  fileSizeBytes  Int?
+  renderProgress Int          @default(0)
+  errorMessage   String?
+  startedAt      DateTime?
+  completedAt    DateTime?
+  createdAt      DateTime     @default(now())
+
+  project   Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  renderJob RenderJob?
+
+  @@index([projectId])
+  @@map("export_jobs")
+}
+
+enum ExportStatus {
+  QUEUED
+  PROCESSING
+  RENDERING
+  POST_PROCESSING
+  UPLOADING
+  DONE
+  FAILED
+}
+
+// ============================================
+// RENDER JOB
+// ============================================
+
+model RenderJob {
+  id          String   @id @default(cuid())
+  exportJobId String   @unique
+  bullmqJobId String?
+  status      String   @default("pending")
+  progress    Int      @default(0)
+  logs        Json?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  exportJob ExportJob @relation(fields: [exportJobId], references: [id], onDelete: Cascade)
+
+  @@map("render_jobs")
+}
+
+// ============================================
+// RECOVERY SNAPSHOT (crash recovery)
+// ============================================
+
+model RecoverySnapshot {
+  id        String   @id @default(cuid())
+  projectId String
+  data      Json // Full project state snapshot
+  source    String   @default("autosave") // "autosave" | "manual" | "pre_export"
+  createdAt DateTime @default(now())
+  expiresAt DateTime // Auto-cleanup after 7 days
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@index([expiresAt])
+  @@map("recovery_snapshots")
+}
+
+// ============================================
+// ANALYTICS EVENT
+// ============================================
+
+model AnalyticsEvent {
+  id        String   @id @default(cuid())
+  userId    String
+  eventType String // e.g. "script_generated", "video_exported", "tts_created"
+  metadata  Json? // Event-specific data
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([eventType])
+  @@index([createdAt])
+  @@index([userId, read])
+  @@map("analytics_events")
+}
+
+// ============================================
+// CUSTOM FONT (user-imported, "My Fonts")
+// ============================================
+
+model CustomFont {
+  id        String   @id @default(cuid())
+  userId    String
+  family    String // Font-family name, derived from URL or user-provided
+  url       String // Direct font file URL (woff2/woff/ttf/otf), or the Google Fonts link for source "google"
+  source    String   @default("file") // "file" | "google"
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, family])
+  @@index([userId])
+  @@map("custom_fonts")
+}
+
+// ============================================
+// FONT USAGE (tracks most-used fonts for "Favorites")
+// ============================================
+
+model FontUsage {
+  id         String   @id @default(cuid())
+  userId     String
+  family     String
+  count      Int      @default(1)
+  lastUsedAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, family])
+  @@index([userId, count])
+  @@map("font_usage")
+}
+
+// ============================================
+// VOICE STYLE PRESET (saved TTS persona + delivery style)
+// ============================================
+
+model VoiceStylePreset {
+  id                String   @id @default(cuid())
+  userId            String
+  name              String
+  geminiVoice       String // Gemini TTS voice name, e.g. "Kore"
+  languageCode      String
+  styleId           String? // Built-in style preset id this was based on, if any
+  styleInstructions String   @db.Text // Custom director's-notes text sent to Gemini TTS
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, name])
+  @@index([userId])
+  @@map("voice_style_presets")
+}
+
+// ============================================
+// CHARACTER BUNDLE (saved multi-character cast preset)
+// ============================================
+
+model CharacterBundle {
+  id          String   @id @default(cuid())
+  userId      String
+  name        String
+  description String?
+  characters  Json     // Array of { characterName, voiceName, languageCode, styleId, customInstructions, presetName }
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, name])
+  @@index([userId])
+  @@map("character_bundles")
+}
+
+// ============================================
+// TTS PREVIEW SAMPLE (cached voice/style preview audio)
+// ============================================
+
+model TtsPreviewSample {
+  id           String   @id @default(cuid())
+  cacheKey     String   @unique // sha256 of voice|language|style-instructions — shared across users
+  voiceName    String
+  languageCode String
+  styleId      String?
+  mimeType     String
+  audio        Bytes
+  createdAt    DateTime @default(now())
+
+  @@map("tts_preview_samples")
+}
+
+// ============================================
+// CONNECTED SOCIAL ACCOUNTS
+// ============================================
+
+enum SocialPlatform {
+  INSTAGRAM
+  FACEBOOK
+  WHATSAPP
+  YOUTUBE
+  TELEGRAM
+}
+
+model ConnectedSocialAccount {
+  id           String         @id @default(cuid())
+  userId       String
+  platform     SocialPlatform
+  accountName  String?
+  accessToken  String?        @db.Text
+  refreshToken String?        @db.Text
+  expiresAt    DateTime?
+  metadata     Json?
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, platform])
+  @@index([userId])
+  @@map("connected_social_accounts")
+}
+
+// ============================================
+// WORKSPACE & TEAM MEMBERSHIP
+// ============================================
+
+enum WorkspaceRole {
+  OWNER
+  ADMIN
+  MEMBER
+  VIEWER
+}
+
+model Workspace {
+  id           String   @id @default(cuid())
+  name         String
+  workspaceKey String   @unique // Unique join key, e.g. "WS-9921-TEAM"
+  ownerId      String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  owner    User              @relation("WorkspaceOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  members  WorkspaceMember[]
+  projects Project[]
+
+  @@index([ownerId])
+  @@map("workspaces")
+}
+
+model WorkspaceMember {
+  id          String        @id @default(cuid())
+  workspaceId String
+  userId      String
+  role        WorkspaceRole @default(MEMBER)
+  joinedAt    DateTime      @default(now())
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([workspaceId, userId])
+  @@index([userId])
+  @@index([workspaceId])
+  @@map("workspace_members")
+}

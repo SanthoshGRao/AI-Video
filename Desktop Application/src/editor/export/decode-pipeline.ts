@@ -47,7 +47,10 @@ const IMAGE_MIME_BY_EXT: Record<string, string> = {
 /** How many decoded frames a single clip may buffer before its ffmpeg
  * process is back-pressured. 4 keeps the decoder just far enough ahead to
  * hide its own latency without letting it run away with memory. */
-const QUEUE_HIGH_WATER = 4;
+/** How many decoded frames a single clip may buffer before its ffmpeg
+ * process is back-pressured. 2 keeps the decoder just far enough ahead to
+ * hide its own latency without letting it run away with memory. */
+const QUEUE_HIGH_WATER = 2;
 
 /** One decoded, already-scaled layer image. `data` is tightly packed RGBA,
  * top row first, exactly width*height*4 bytes. */
@@ -148,14 +151,16 @@ export class ClipDecoder {
     const merged = this.pending.length === 1 ? this.pending[0] : Buffer.concat(this.pending, this.pendingBytes);
     let offset = 0;
     while (this.pendingBytes - offset >= this.frameBytes) {
-      // Copied out rather than kept as a subarray view: the frame is sent
-      // over Electron IPC, and structured-cloning a view clones its *whole*
-      // backing ArrayBuffer — which here can hold several other frames.
-      const frame = Buffer.from(merged.subarray(offset, offset + this.frameBytes));
+      // Allocate from Node's internal slab pool to prevent ArrayBuffer OOM failures.
+      const frame = Buffer.allocUnsafe(this.frameBytes);
+      merged.copy(frame, 0, offset, offset + this.frameBytes);
       offset += this.frameBytes;
       const waiter = this.waiters.shift();
-      if (waiter) waiter(frame);
-      else this.queue.push(frame);
+      if (waiter) {
+        waiter(frame);
+      } else {
+        this.queue.push(frame);
+      }
     }
     const remainder = merged.subarray(offset);
     this.pending = remainder.length ? [remainder] : [];
@@ -163,18 +168,19 @@ export class ClipDecoder {
 
     if (!this.paused && this.queue.length >= QUEUE_HIGH_WATER) {
       this.paused = true;
-      this.proc.stdout!.pause();
+      try { this.proc.stdout?.pause(); } catch { /* noop */ }
     }
   }
 
   /** Next decoded frame in source order, or null once the decoder is done
    * and has no more buffered frames. */
   nextFrame(): Promise<Buffer | null> {
+    const frame = this.queue.length > 0 ? this.queue.shift()! : null;
     if (this.paused && this.queue.length < QUEUE_HIGH_WATER) {
       this.paused = false;
-      this.proc.stdout!.resume();
+      try { this.proc.stdout?.resume(); } catch { /* noop */ }
     }
-    if (this.queue.length > 0) return Promise.resolve(this.queue.shift()!);
+    if (frame) return Promise.resolve(frame);
     if (this.ended) return Promise.resolve(null);
     return new Promise((resolve) => this.waiters.push(resolve));
   }

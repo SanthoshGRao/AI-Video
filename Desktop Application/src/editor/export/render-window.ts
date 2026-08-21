@@ -195,7 +195,12 @@ export async function openRenderWindow(): Promise<RenderWindowHandle> {
       const id = nextFrameId++;
       return new Promise<Buffer>((resolve, reject) => {
         pending.set(id, { resolve, reject });
-        win.webContents.send("export-render:frame", { id, width, height, background, layers });
+        try {
+          win.webContents.send("export-render:frame", { id, width, height, background, layers });
+        } catch (err) {
+          pending.delete(id);
+          reject(err);
+        }
       });
     },
     engine() {

@@ -1,0 +1,1085 @@
+◇ injected env (21) from .env.local // tip: ⌘ multiple files { path: ['.env.local', '.env'] }
+◇ injected env (0) from .env // tip: ⌘ enable debugging { debug: true }
+[warm-cache] 360 combos: 30 voices x 6 styles x 2 language(s) [kn-IN, en-US]
+[1/360] kn-IN | Achernar | voice-default -> already cached
+[TTS] Synthesizing with Gemini: {
+  model: 'gemini-3.1-flash-tts-preview',
+  voiceName: 'Achernar',
+  geminiVoice: 'Achernar',
+  voiceLabel: 'Achernar - Kannada',
+  languageCode: 'kn-IN',
+  textLength: 63
+}
+[TTS] Pre-normalizing mixed-language text to kn-IN...
+[TTS] Normalizing text for language kn-IN...
+[TTS] Normalized result: ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Pre-normalized text (63 chars): ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Attempting TTS (inline style (full), model: gemini-3.1-flash-tts-preview, 63 chars)
+[TTS] Success (inline style (full))
+[2/360] kn-IN | Achernar | natural -> generated (8.5s, 241964b)
+[TTS] Synthesizing with Gemini: {
+  model: 'gemini-3.1-flash-tts-preview',
+  voiceName: 'Achernar',
+  geminiVoice: 'Achernar',
+  voiceLabel: 'Achernar - Kannada',
+  languageCode: 'kn-IN',
+  textLength: 63
+}
+[TTS] Pre-normalizing mixed-language text to kn-IN...
+[TTS] Normalizing text for language kn-IN...
+[TTS] Normalized result: ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Pre-normalized text (63 chars): ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Attempting TTS (inline style (full), model: gemini-3.1-flash-tts-preview, 63 chars)
+[TTS] Success (inline style (full))
+[3/360] kn-IN | Achernar | energetic-ad -> generated (9.1s, 249644b)
+[TTS] Synthesizing with Gemini: {
+  model: 'gemini-3.1-flash-tts-preview',
+  voiceName: 'Achernar',
+  geminiVoice: 'Achernar',
+  voiceLabel: 'Achernar - Kannada',
+  languageCode: 'kn-IN',
+  textLength: 63
+}
+[TTS] Pre-normalizing mixed-language text to kn-IN...
+[TTS] Normalizing text for language kn-IN...
+[TTS] Normalized result: ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Pre-normalized text (63 chars): ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Attempting TTS (inline style (full), model: gemini-3.1-flash-tts-preview, 63 chars)
+[TTS] Success (inline style (full))
+[4/360] kn-IN | Achernar | cinematic-trailer -> generated (11.0s, 407084b)
+[5/360] kn-IN | Achernar | luxury-premium -> already cached
+[TTS] Synthesizing with Gemini: {
+  model: 'gemini-3.1-flash-tts-preview',
+  voiceName: 'Achernar',
+  geminiVoice: 'Achernar',
+  voiceLabel: 'Achernar - Kannada',
+  languageCode: 'kn-IN',
+  textLength: 63
+}
+[TTS] Pre-normalizing mixed-language text to kn-IN...
+[TTS] Normalizing text for language kn-IN...
+[TTS] Normalized result: ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Pre-normalized text (63 chars): ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Attempting TTS (inline style (full), model: gemini-3.1-flash-tts-preview, 63 chars)
+[TTS] Success (inline style (full))
+[6/360] kn-IN | Achernar | social-hype -> generated (7.5s, 207404b)
+[TTS] Synthesizing with Gemini: {
+  model: 'gemini-3.1-flash-tts-preview',
+  voiceName: 'Achird',
+  geminiVoice: 'Achird',
+  voiceLabel: 'Achird - Kannada',
+  languageCode: 'kn-IN',
+  textLength: 63
+}
+[TTS] Pre-normalizing mixed-language text to kn-IN...
+[TTS] Normalizing text for language kn-IN...
+[TTS] Normalized result: ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Pre-normalized text (63 chars): ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Attempting TTS (inline style (full), model: gemini-3.1-flash-tts-preview, 63 chars)
+[TTS] Success (inline style (full))
+[7/360] kn-IN | Achird | voice-default -> generated (9.2s, 247724b)
+[TTS] Synthesizing with Gemini: {
+  model: 'gemini-3.1-flash-tts-preview',
+  voiceName: 'Achird',
+  geminiVoice: 'Achird',
+  voiceLabel: 'Achird - Kannada',
+  languageCode: 'kn-IN',
+  textLength: 63
+}
+[TTS] Pre-normalizing mixed-language text to kn-IN...
+[TTS] Normalizing text for language kn-IN...
+[TTS] Normalized result: ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Pre-normalized text (63 chars): ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Attempting TTS (inline style (full), model: gemini-3.1-flash-tts-preview, 63 chars)
+[TTS] Success (inline style (full))
+[8/360] kn-IN | Achird | natural -> generated (9.0s, 284204b)
+[TTS] Synthesizing with Gemini: {
+  model: 'gemini-3.1-flash-tts-preview',
+  voiceName: 'Achird',
+  geminiVoice: 'Achird',
+  voiceLabel: 'Achird - Kannada',
+  languageCode: 'kn-IN',
+  textLength: 63
+}
+[TTS] Pre-normalizing mixed-language text to kn-IN...
+[TTS] Normalizing text for language kn-IN...
+[TTS] Normalized result: ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Pre-normalized text (63 chars): ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Attempting TTS (inline style (full), model: gemini-3.1-flash-tts-preview, 63 chars)
+[TTS] Success (inline style (full))
+[9/360] kn-IN | Achird | energetic-ad -> generated (9.4s, 251564b)
+[TTS] Synthesizing with Gemini: {
+  model: 'gemini-3.1-flash-tts-preview',
+  voiceName: 'Achird',
+  geminiVoice: 'Achird',
+  voiceLabel: 'Achird - Kannada',
+  languageCode: 'kn-IN',
+  textLength: 63
+}
+[TTS] Pre-normalizing mixed-language text to kn-IN...
+[TTS] Normalizing text for language kn-IN...
+[TTS] Normalized result: ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Pre-normalized text (63 chars): ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Attempting TTS (inline style (full), model: gemini-3.1-flash-tts-preview, 63 chars)
+[TTS] Success (inline style (full))
+[10/360] kn-IN | Achird | cinematic-trailer -> generated (10.0s, 389804b)
+[TTS] Synthesizing with Gemini: {
+  model: 'gemini-3.1-flash-tts-preview',
+  voiceName: 'Achird',
+  geminiVoice: 'Achird',
+  voiceLabel: 'Achird - Kannada',
+  languageCode: 'kn-IN',
+  textLength: 63
+}
+[TTS] Pre-normalizing mixed-language text to kn-IN...
+[TTS] Normalizing text for language kn-IN...
+[TTS] Normalized result: ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Pre-normalized text (63 chars): ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Attempting TTS (inline style (full), model: gemini-3.1-flash-tts-preview, 63 chars)
+[TTS] Success (inline style (full))
+[11/360] kn-IN | Achird | luxury-premium -> generated (8.5s, 305324b)
+[TTS] Synthesizing with Gemini: {
+  model: 'gemini-3.1-flash-tts-preview',
+  voiceName: 'Achird',
+  geminiVoice: 'Achird',
+  voiceLabel: 'Achird - Kannada',
+  languageCode: 'kn-IN',
+  textLength: 63
+}
+[TTS] Pre-normalizing mixed-language text to kn-IN...
+[TTS] Normalizing text for language kn-IN...
+[TTS] Normalized result: ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Pre-normalized text (63 chars): ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Attempting TTS (inline style (full), model: gemini-3.1-flash-tts-preview, 63 chars)
+[TTS] Success (inline style (full))
+[12/360] kn-IN | Achird | social-hype -> generated (8.4s, 238124b)
+[TTS] Synthesizing with Gemini: {
+  model: 'gemini-3.1-flash-tts-preview',
+  voiceName: 'Algenib',
+  geminiVoice: 'Algenib',
+  voiceLabel: 'Algenib - Kannada',
+  languageCode: 'kn-IN',
+  textLength: 63
+}
+[TTS] Pre-normalizing mixed-language text to kn-IN...
+[TTS] Normalizing text for language kn-IN...
+[TTS] Normalized result: ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Pre-normalized text (63 chars): ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Attempting TTS (inline style (full), model: gemini-3.1-flash-tts-preview, 63 chars)
+[TTS] Success (inline style (full))
+[13/360] kn-IN | Algenib | voice-default -> generated (14.2s, 251564b)
+[TTS] Synthesizing with Gemini: {
+  model: 'gemini-3.1-flash-tts-preview',
+  voiceName: 'Algenib',
+  geminiVoice: 'Algenib',
+  voiceLabel: 'Algenib - Kannada',
+  languageCode: 'kn-IN',
+  textLength: 63
+}
+[TTS] Pre-normalizing mixed-language text to kn-IN...
+[TTS] Normalizing text for language kn-IN...
+[TTS] Normalized result: ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Pre-normalized text (63 chars): ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Attempting TTS (inline style (full), model: gemini-3.1-flash-tts-preview, 63 chars)
+[TTS] Success (inline style (full))
+[14/360] kn-IN | Algenib | natural -> generated (7.8s, 234284b)
+[TTS] Synthesizing with Gemini: {
+  model: 'gemini-3.1-flash-tts-preview',
+  voiceName: 'Algenib',
+  geminiVoice: 'Algenib',
+  voiceLabel: 'Algenib - Kannada',
+  languageCode: 'kn-IN',
+  textLength: 63
+}
+[TTS] Pre-normalizing mixed-language text to kn-IN...
+[TTS] Normalizing text for language kn-IN...
+[TTS] Normalized result: ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Pre-normalized text (63 chars): ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Attempting TTS (inline style (full), model: gemini-3.1-flash-tts-preview, 63 chars)
+[TTS] Success (inline style (full))
+[15/360] kn-IN | Algenib | energetic-ad -> generated (9.0s, 247724b)
+[TTS] Synthesizing with Gemini: {
+  model: 'gemini-3.1-flash-tts-preview',
+  voiceName: 'Algenib',
+  geminiVoice: 'Algenib',
+  voiceLabel: 'Algenib - Kannada',
+  languageCode: 'kn-IN',
+  textLength: 63
+}
+[TTS] Pre-normalizing mixed-language text to kn-IN...
+[TTS] Normalizing text for language kn-IN...
+[TTS] Normalized result: ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Pre-normalized text (63 chars): ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Attempting TTS (inline style (full), model: gemini-3.1-flash-tts-preview, 63 chars)
+[TTS] Success (inline style (full))
+[16/360] kn-IN | Algenib | cinematic-trailer -> generated (11.6s, 389804b)
+[TTS] Synthesizing with Gemini: {
+  model: 'gemini-3.1-flash-tts-preview',
+  voiceName: 'Algenib',
+  geminiVoice: 'Algenib',
+  voiceLabel: 'Algenib - Kannada',
+  languageCode: 'kn-IN',
+  textLength: 63
+}
+[TTS] Pre-normalizing mixed-language text to kn-IN...
+[TTS] Normalizing text for language kn-IN...
+[TTS] Normalized result: ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Pre-normalized text (63 chars): ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Attempting TTS (inline style (full), model: gemini-3.1-flash-tts-preview, 63 chars)
+[TTS] Success (inline style (full))
+[17/360] kn-IN | Algenib | luxury-premium -> generated (8.6s, 282284b)
+[TTS] Synthesizing with Gemini: {
+  model: 'gemini-3.1-flash-tts-preview',
+  voiceName: 'Algenib',
+  geminiVoice: 'Algenib',
+  voiceLabel: 'Algenib - Kannada',
+  languageCode: 'kn-IN',
+  textLength: 63
+}
+[TTS] Pre-normalizing mixed-language text to kn-IN...
+[TTS] Normalizing text for language kn-IN...
+[TTS] Normalized result: ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Pre-normalized text (63 chars): ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Attempting TTS (inline style (full), model: gemini-3.1-flash-tts-preview, 63 chars)
+[TTS] Success (inline style (full))
+[18/360] kn-IN | Algenib | social-hype -> generated (6.8s, 224684b)
+[TTS] Synthesizing with Gemini: {
+  model: 'gemini-3.1-flash-tts-preview',
+  voiceName: 'Algieba',
+  geminiVoice: 'Algieba',
+  voiceLabel: 'Algieba - Kannada',
+  languageCode: 'kn-IN',
+  textLength: 63
+}
+[TTS] Pre-normalizing mixed-language text to kn-IN...
+[TTS] Normalizing text for language kn-IN...
+[TTS] Normalized result: ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Pre-normalized text (63 chars): ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Attempting TTS (inline style (full), model: gemini-3.1-flash-tts-preview, 63 chars)
+[TTS] Success (inline style (full))
+[19/360] kn-IN | Algieba | voice-default -> generated (8.5s, 253484b)
+[TTS] Synthesizing with Gemini: {
+  model: 'gemini-3.1-flash-tts-preview',
+  voiceName: 'Algieba',
+  geminiVoice: 'Algieba',
+  voiceLabel: 'Algieba - Kannada',
+  languageCode: 'kn-IN',
+  textLength: 63
+}
+[TTS] Pre-normalizing mixed-language text to kn-IN...
+[TTS] Normalizing text for language kn-IN...
+[TTS] Normalized result: ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Pre-normalized text (63 chars): ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Attempting TTS (inline style (full), model: gemini-3.1-flash-tts-preview, 63 chars)
+[TTS] Success (inline style (full))
+[20/360] kn-IN | Algieba | natural -> generated (7.3s, 230444b)
+[TTS] Synthesizing with Gemini: {
+  model: 'gemini-3.1-flash-tts-preview',
+  voiceName: 'Algieba',
+  geminiVoice: 'Algieba',
+  voiceLabel: 'Algieba - Kannada',
+  languageCode: 'kn-IN',
+  textLength: 63
+}
+[TTS] Pre-normalizing mixed-language text to kn-IN...
+[TTS] Normalizing text for language kn-IN...
+[TTS] Normalized result: ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Pre-normalized text (63 chars): ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Attempting TTS (inline style (full), model: gemini-3.1-flash-tts-preview, 63 chars)
+[TTS] Success (inline style (full))
+[21/360] kn-IN | Algieba | energetic-ad -> generated (7.5s, 245804b)
+[TTS] Synthesizing with Gemini: {
+  model: 'gemini-3.1-flash-tts-preview',
+  voiceName: 'Algieba',
+  geminiVoice: 'Algieba',
+  voiceLabel: 'Algieba - Kannada',
+  languageCode: 'kn-IN',
+  textLength: 63
+}
+[TTS] Pre-normalizing mixed-language text to kn-IN...
+[TTS] Normalizing text for language kn-IN...
+[TTS] Normalized result: ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Pre-normalized text (63 chars): ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Attempting TTS (inline style (full), model: gemini-3.1-flash-tts-preview, 63 chars)
+[TTS] Success (inline style (full))
+[22/360] kn-IN | Algieba | cinematic-trailer -> generated (9.5s, 422444b)
+[TTS] Synthesizing with Gemini: {
+  model: 'gemini-3.1-flash-tts-preview',
+  voiceName: 'Algieba',
+  geminiVoice: 'Algieba',
+  voiceLabel: 'Algieba - Kannada',
+  languageCode: 'kn-IN',
+  textLength: 63
+}
+[TTS] Pre-normalizing mixed-language text to kn-IN...
+[TTS] Normalizing text for language kn-IN...
+[TTS] Normalized result: ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Pre-normalized text (63 chars): ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Attempting TTS (inline style (full), model: gemini-3.1-flash-tts-preview, 63 chars)
+[TTS] Success (inline style (full))
+[23/360] kn-IN | Algieba | luxury-premium -> generated (9.5s, 328364b)
+[TTS] Synthesizing with Gemini: {
+  model: 'gemini-3.1-flash-tts-preview',
+  voiceName: 'Algieba',
+  geminiVoice: 'Algieba',
+  voiceLabel: 'Algieba - Kannada',
+  languageCode: 'kn-IN',
+  textLength: 63
+}
+[TTS] Pre-normalizing mixed-language text to kn-IN...
+[TTS] Normalizing text for language kn-IN...
+[TTS] Normalized result: ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Pre-normalized text (63 chars): ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Attempting TTS (inline style (full), model: gemini-3.1-flash-tts-preview, 63 chars)
+[TTS] Success (inline style (full))
+[24/360] kn-IN | Algieba | social-hype -> generated (8.7s, 240044b)
+[TTS] Synthesizing with Gemini: {
+  model: 'gemini-3.1-flash-tts-preview',
+  voiceName: 'Alnilam',
+  geminiVoice: 'Alnilam',
+  voiceLabel: 'Alnilam - Kannada',
+  languageCode: 'kn-IN',
+  textLength: 63
+}
+[TTS] Pre-normalizing mixed-language text to kn-IN...
+[TTS] Normalizing text for language kn-IN...
+[TTS] Normalized result: ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Pre-normalized text (63 chars): ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Attempting TTS (inline style (full), model: gemini-3.1-flash-tts-preview, 63 chars)
+[TTS] Success (inline style (full))
+[25/360] kn-IN | Alnilam | voice-default -> generated (7.8s, 257324b)
+[TTS] Synthesizing with Gemini: {
+  model: 'gemini-3.1-flash-tts-preview',
+  voiceName: 'Alnilam',
+  geminiVoice: 'Alnilam',
+  voiceLabel: 'Alnilam - Kannada',
+  languageCode: 'kn-IN',
+  textLength: 63
+}
+[TTS] Pre-normalizing mixed-language text to kn-IN...
+[TTS] Normalizing text for language kn-IN...
+[TTS] Normalized result: ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Pre-normalized text (63 chars): ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Attempting TTS (inline style (full), model: gemini-3.1-flash-tts-preview, 63 chars)
+[TTS] Success (inline style (full))
+[26/360] kn-IN | Alnilam | natural -> generated (7.9s, 261164b)
+[TTS] Synthesizing with Gemini: {
+  model: 'gemini-3.1-flash-tts-preview',
+  voiceName: 'Alnilam',
+  geminiVoice: 'Alnilam',
+  voiceLabel: 'Alnilam - Kannada',
+  languageCode: 'kn-IN',
+  textLength: 63
+}
+[TTS] Pre-normalizing mixed-language text to kn-IN...
+[TTS] Normalizing text for language kn-IN...
+[TTS] Normalized result: ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Pre-normalized text (63 chars): ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Attempting TTS (inline style (full), model: gemini-3.1-flash-tts-preview, 63 chars)
+[TTS] Success (inline style (full))
+[27/360] kn-IN | Alnilam | energetic-ad -> generated (8.8s, 261164b)
+[TTS] Synthesizing with Gemini: {
+  model: 'gemini-3.1-flash-tts-preview',
+  voiceName: 'Alnilam',
+  geminiVoice: 'Alnilam',
+  voiceLabel: 'Alnilam - Kannada',
+  languageCode: 'kn-IN',
+  textLength: 63
+}
+[TTS] Pre-normalizing mixed-language text to kn-IN...
+[TTS] Normalizing text for language kn-IN...
+[TTS] Normalized result: ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Pre-normalized text (63 chars): ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Attempting TTS (inline style (full), model: gemini-3.1-flash-tts-preview, 63 chars)
+[TTS] Success (inline style (full))
+[28/360] kn-IN | Alnilam | cinematic-trailer -> generated (10.8s, 412844b)
+[TTS] Synthesizing with Gemini: {
+  model: 'gemini-3.1-flash-tts-preview',
+  voiceName: 'Alnilam',
+  geminiVoice: 'Alnilam',
+  voiceLabel: 'Alnilam - Kannada',
+  languageCode: 'kn-IN',
+  textLength: 63
+}
+[TTS] Pre-normalizing mixed-language text to kn-IN...
+[TTS] Normalizing text for language kn-IN...
+[TTS] Normalized result: ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Pre-normalized text (63 chars): ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Attempting TTS (inline style (full), model: gemini-3.1-flash-tts-preview, 63 chars)
+[TTS] Success (inline style (full))
+[29/360] kn-IN | Alnilam | luxury-premium -> generated (8.6s, 313004b)
+[TTS] Synthesizing with Gemini: {
+  model: 'gemini-3.1-flash-tts-preview',
+  voiceName: 'Alnilam',
+  geminiVoice: 'Alnilam',
+  voiceLabel: 'Alnilam - Kannada',
+  languageCode: 'kn-IN',
+  textLength: 63
+}
+[TTS] Pre-normalizing mixed-language text to kn-IN...
+[TTS] Normalizing text for language kn-IN...
+[TTS] Normalized result: ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Pre-normalized text (63 chars): ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Attempting TTS (inline style (full), model: gemini-3.1-flash-tts-preview, 63 chars)
+[TTS] Success (inline style (full))
+[30/360] kn-IN | Alnilam | social-hype -> generated (7.2s, 232364b)
+[31/360] kn-IN | Aoede | voice-default -> already cached
+[TTS] Synthesizing with Gemini: {
+  model: 'gemini-3.1-flash-tts-preview',
+  voiceName: 'Aoede',
+  geminiVoice: 'Aoede',
+  voiceLabel: 'Aoede - Kannada',
+  languageCode: 'kn-IN',
+  textLength: 63
+}
+[TTS] Pre-normalizing mixed-language text to kn-IN...
+[TTS] Normalizing text for language kn-IN...
+[TTS] Normalized result: ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Pre-normalized text (63 chars): ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Attempting TTS (inline style (full), model: gemini-3.1-flash-tts-preview, 63 chars)
+[TTS] Success (inline style (full))
+[32/360] kn-IN | Aoede | natural -> generated (7.5s, 236204b)
+[TTS] Synthesizing with Gemini: {
+  model: 'gemini-3.1-flash-tts-preview',
+  voiceName: 'Aoede',
+  geminiVoice: 'Aoede',
+  voiceLabel: 'Aoede - Kannada',
+  languageCode: 'kn-IN',
+  textLength: 63
+}
+[TTS] Pre-normalizing mixed-language text to kn-IN...
+[TTS] Normalizing text for language kn-IN...
+[TTS] Normalized result: ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Pre-normalized text (63 chars): ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Attempting TTS (inline style (full), model: gemini-3.1-flash-tts-preview, 63 chars)
+[TTS] Success (inline style (full))
+[33/360] kn-IN | Aoede | energetic-ad -> generated (7.2s, 232364b)
+[TTS] Synthesizing with Gemini: {
+  model: 'gemini-3.1-flash-tts-preview',
+  voiceName: 'Aoede',
+  geminiVoice: 'Aoede',
+  voiceLabel: 'Aoede - Kannada',
+  languageCode: 'kn-IN',
+  textLength: 63
+}
+[TTS] Pre-normalizing mixed-language text to kn-IN...
+[TTS] Normalizing text for language kn-IN...
+[TTS] Normalized result: ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Pre-normalized text (63 chars): ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Attempting TTS (inline style (full), model: gemini-3.1-flash-tts-preview, 63 chars)
+[TTS] Success (inline style (full))
+[34/360] kn-IN | Aoede | cinematic-trailer -> generated (9.9s, 437804b)
+[TTS] Synthesizing with Gemini: {
+  model: 'gemini-3.1-flash-tts-preview',
+  voiceName: 'Aoede',
+  geminiVoice: 'Aoede',
+  voiceLabel: 'Aoede - Kannada',
+  languageCode: 'kn-IN',
+  textLength: 63
+}
+[TTS] Pre-normalizing mixed-language text to kn-IN...
+[TTS] Normalizing text for language kn-IN...
+[TTS] Normalized result: ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Pre-normalized text (63 chars): ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Attempting TTS (inline style (full), model: gemini-3.1-flash-tts-preview, 63 chars)
+[TTS] Success (inline style (full))
+[35/360] kn-IN | Aoede | luxury-premium -> generated (8.7s, 293804b)
+[TTS] Synthesizing with Gemini: {
+  model: 'gemini-3.1-flash-tts-preview',
+  voiceName: 'Aoede',
+  geminiVoice: 'Aoede',
+  voiceLabel: 'Aoede - Kannada',
+  languageCode: 'kn-IN',
+  textLength: 63
+}
+[TTS] Pre-normalizing mixed-language text to kn-IN...
+[TTS] Normalizing text for language kn-IN...
+[TTS] Normalized result: ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Pre-normalized text (63 chars): ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Attempting TTS (inline style (full), model: gemini-3.1-flash-tts-preview, 63 chars)
+[TTS] Success (inline style (full))
+[36/360] kn-IN | Aoede | social-hype -> generated (6.8s, 209324b)
+[TTS] Synthesizing with Gemini: {
+  model: 'gemini-3.1-flash-tts-preview',
+  voiceName: 'Autonoe',
+  geminiVoice: 'Autonoe',
+  voiceLabel: 'Autonoe - Kannada',
+  languageCode: 'kn-IN',
+  textLength: 63
+}
+[TTS] Pre-normalizing mixed-language text to kn-IN...
+[TTS] Normalizing text for language kn-IN...
+[TTS] Normalized result: ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Pre-normalized text (63 chars): ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Attempting TTS (inline style (full), model: gemini-3.1-flash-tts-preview, 63 chars)
+[TTS] Success (inline style (full))
+[37/360] kn-IN | Autonoe | voice-default -> generated (7.9s, 243884b)
+[TTS] Synthesizing with Gemini: {
+  model: 'gemini-3.1-flash-tts-preview',
+  voiceName: 'Autonoe',
+  geminiVoice: 'Autonoe',
+  voiceLabel: 'Autonoe - Kannada',
+  languageCode: 'kn-IN',
+  textLength: 63
+}
+[TTS] Pre-normalizing mixed-language text to kn-IN...
+[TTS] Normalizing text for language kn-IN...
+[TTS] Normalized result: ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Pre-normalized text (63 chars): ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Attempting TTS (inline style (full), model: gemini-3.1-flash-tts-preview, 63 chars)
+[TTS] Success (inline style (full))
+[38/360] kn-IN | Autonoe | natural -> generated (7.2s, 245804b)
+[TTS] Synthesizing with Gemini: {
+  model: 'gemini-3.1-flash-tts-preview',
+  voiceName: 'Autonoe',
+  geminiVoice: 'Autonoe',
+  voiceLabel: 'Autonoe - Kannada',
+  languageCode: 'kn-IN',
+  textLength: 63
+}
+[TTS] Pre-normalizing mixed-language text to kn-IN...
+[TTS] Normalizing text for language kn-IN...
+[TTS] Normalized result: ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Pre-normalized text (63 chars): ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Attempting TTS (inline style (full), model: gemini-3.1-flash-tts-preview, 63 chars)
+[TTS] Success (inline style (full))
+[39/360] kn-IN | Autonoe | energetic-ad -> generated (8.1s, 257324b)
+[TTS] Synthesizing with Gemini: {
+  model: 'gemini-3.1-flash-tts-preview',
+  voiceName: 'Autonoe',
+  geminiVoice: 'Autonoe',
+  voiceLabel: 'Autonoe - Kannada',
+  languageCode: 'kn-IN',
+  textLength: 63
+}
+[TTS] Pre-normalizing mixed-language text to kn-IN...
+[TTS] Normalizing text for language kn-IN...
+[TTS] Normalized result: ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Pre-normalized text (63 chars): ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Attempting TTS (inline style (full), model: gemini-3.1-flash-tts-preview, 63 chars)
+[TTS] Success (inline style (full))
+[40/360] kn-IN | Autonoe | cinematic-trailer -> generated (9.7s, 387884b)
+[TTS] Synthesizing with Gemini: {
+  model: 'gemini-3.1-flash-tts-preview',
+  voiceName: 'Autonoe',
+  geminiVoice: 'Autonoe',
+  voiceLabel: 'Autonoe - Kannada',
+  languageCode: 'kn-IN',
+  textLength: 63
+}
+[TTS] Pre-normalizing mixed-language text to kn-IN...
+[TTS] Normalizing text for language kn-IN...
+[TTS] Normalized result: ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Pre-normalized text (63 chars): ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Attempting TTS (inline style (full), model: gemini-3.1-flash-tts-preview, 63 chars)
+[TTS] Success (inline style (full))
+[41/360] kn-IN | Autonoe | luxury-premium -> generated (8.2s, 307244b)
+[TTS] Synthesizing with Gemini: {
+  model: 'gemini-3.1-flash-tts-preview',
+  voiceName: 'Autonoe',
+  geminiVoice: 'Autonoe',
+  voiceLabel: 'Autonoe - Kannada',
+  languageCode: 'kn-IN',
+  textLength: 63
+}
+[TTS] Pre-normalizing mixed-language text to kn-IN...
+[TTS] Normalizing text for language kn-IN...
+[TTS] Normalized result: ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Pre-normalized text (63 chars): ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Attempting TTS (inline style (full), model: gemini-3.1-flash-tts-preview, 63 chars)
+[TTS] Success (inline style (full))
+[42/360] kn-IN | Autonoe | social-hype -> generated (6.5s, 230444b)
+[TTS] Synthesizing with Gemini: {
+  model: 'gemini-3.1-flash-tts-preview',
+  voiceName: 'Callirrhoe',
+  geminiVoice: 'Callirrhoe',
+  voiceLabel: 'Callirrhoe - Kannada',
+  languageCode: 'kn-IN',
+  textLength: 63
+}
+[TTS] Pre-normalizing mixed-language text to kn-IN...
+[TTS] Normalizing text for language kn-IN...
+[TTS] Normalized result: ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Pre-normalized text (63 chars): ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Attempting TTS (inline style (full), model: gemini-3.1-flash-tts-preview, 63 chars)
+[TTS] Success (inline style (full))
+[43/360] kn-IN | Callirrhoe | voice-default -> generated (7.6s, 255404b)
+[TTS] Synthesizing with Gemini: {
+  model: 'gemini-3.1-flash-tts-preview',
+  voiceName: 'Callirrhoe',
+  geminiVoice: 'Callirrhoe',
+  voiceLabel: 'Callirrhoe - Kannada',
+  languageCode: 'kn-IN',
+  textLength: 63
+}
+[TTS] Pre-normalizing mixed-language text to kn-IN...
+[TTS] Normalizing text for language kn-IN...
+[TTS] Normalized result: ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Pre-normalized text (63 chars): ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Attempting TTS (inline style (full), model: gemini-3.1-flash-tts-preview, 63 chars)
+[TTS] Success (inline style (full))
+[44/360] kn-IN | Callirrhoe | natural -> generated (8.9s, 247724b)
+[TTS] Synthesizing with Gemini: {
+  model: 'gemini-3.1-flash-tts-preview',
+  voiceName: 'Callirrhoe',
+  geminiVoice: 'Callirrhoe',
+  voiceLabel: 'Callirrhoe - Kannada',
+  languageCode: 'kn-IN',
+  textLength: 63
+}
+[TTS] Pre-normalizing mixed-language text to kn-IN...
+[TTS] Normalizing text for language kn-IN...
+[TTS] Normalized result: ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Pre-normalized text (63 chars): ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Attempting TTS (inline style (full), model: gemini-3.1-flash-tts-preview, 63 chars)
+[TTS] Success (inline style (full))
+[45/360] kn-IN | Callirrhoe | energetic-ad -> generated (8.0s, 247724b)
+[TTS] Synthesizing with Gemini: {
+  model: 'gemini-3.1-flash-tts-preview',
+  voiceName: 'Callirrhoe',
+  geminiVoice: 'Callirrhoe',
+  voiceLabel: 'Callirrhoe - Kannada',
+  languageCode: 'kn-IN',
+  textLength: 63
+}
+[TTS] Pre-normalizing mixed-language text to kn-IN...
+[TTS] Normalizing text for language kn-IN...
+[TTS] Normalized result: ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Pre-normalized text (63 chars): ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Attempting TTS (inline style (full), model: gemini-3.1-flash-tts-preview, 63 chars)
+[TTS] Success (inline style (full))
+[46/360] kn-IN | Callirrhoe | cinematic-trailer -> generated (9.8s, 374444b)
+[TTS] Synthesizing with Gemini: {
+  model: 'gemini-3.1-flash-tts-preview',
+  voiceName: 'Callirrhoe',
+  geminiVoice: 'Callirrhoe',
+  voiceLabel: 'Callirrhoe - Kannada',
+  languageCode: 'kn-IN',
+  textLength: 63
+}
+[TTS] Pre-normalizing mixed-language text to kn-IN...
+[TTS] Normalizing text for language kn-IN...
+[TTS] Normalized result: ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Pre-normalized text (63 chars): ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Attempting TTS (inline style (full), model: gemini-3.1-flash-tts-preview, 63 chars)
+[TTS] Success (inline style (full))
+[47/360] kn-IN | Callirrhoe | luxury-premium -> generated (8.5s, 345644b)
+[TTS] Synthesizing with Gemini: {
+  model: 'gemini-3.1-flash-tts-preview',
+  voiceName: 'Callirrhoe',
+  geminiVoice: 'Callirrhoe',
+  voiceLabel: 'Callirrhoe - Kannada',
+  languageCode: 'kn-IN',
+  textLength: 63
+}
+[TTS] Pre-normalizing mixed-language text to kn-IN...
+[TTS] Normalizing text for language kn-IN...
+[TTS] Normalized result: ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Pre-normalized text (63 chars): ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Attempting TTS (inline style (full), model: gemini-3.1-flash-tts-preview, 63 chars)
+[TTS] Success (inline style (full))
+[48/360] kn-IN | Callirrhoe | social-hype -> generated (6.9s, 236204b)
+[TTS] Synthesizing with Gemini: {
+  model: 'gemini-3.1-flash-tts-preview',
+  voiceName: 'Charon',
+  geminiVoice: 'Charon',
+  voiceLabel: 'Charon - Kannada',
+  languageCode: 'kn-IN',
+  textLength: 63
+}
+[TTS] Pre-normalizing mixed-language text to kn-IN...
+[TTS] Normalizing text for language kn-IN...
+[TTS] Normalized result: ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Pre-normalized text (63 chars): ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Attempting TTS (inline style (full), model: gemini-3.1-flash-tts-preview, 63 chars)
+[TTS] Success (inline style (full))
+[49/360] kn-IN | Charon | voice-default -> generated (8.2s, 241964b)
+[TTS] Synthesizing with Gemini: {
+  model: 'gemini-3.1-flash-tts-preview',
+  voiceName: 'Charon',
+  geminiVoice: 'Charon',
+  voiceLabel: 'Charon - Kannada',
+  languageCode: 'kn-IN',
+  textLength: 63
+}
+[TTS] Pre-normalizing mixed-language text to kn-IN...
+[TTS] Normalizing text for language kn-IN...
+[TTS] Normalized result: ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Pre-normalized text (63 chars): ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Attempting TTS (inline style (full), model: gemini-3.1-flash-tts-preview, 63 chars)
+[TTS] Success (inline style (full))
+[50/360] kn-IN | Charon | natural -> generated (6.9s, 238124b)
+[TTS] Synthesizing with Gemini: {
+  model: 'gemini-3.1-flash-tts-preview',
+  voiceName: 'Charon',
+  geminiVoice: 'Charon',
+  voiceLabel: 'Charon - Kannada',
+  languageCode: 'kn-IN',
+  textLength: 63
+}
+[TTS] Pre-normalizing mixed-language text to kn-IN...
+[TTS] Normalizing text for language kn-IN...
+[TTS] Normalized result: ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Pre-normalized text (63 chars): ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Attempting TTS (inline style (full), model: gemini-3.1-flash-tts-preview, 63 chars)
+[TTS] Success (inline style (full))
+[51/360] kn-IN | Charon | energetic-ad -> generated (8.8s, 253484b)
+[TTS] Synthesizing with Gemini: {
+  model: 'gemini-3.1-flash-tts-preview',
+  voiceName: 'Charon',
+  geminiVoice: 'Charon',
+  voiceLabel: 'Charon - Kannada',
+  languageCode: 'kn-IN',
+  textLength: 63
+}
+[TTS] Pre-normalizing mixed-language text to kn-IN...
+[TTS] Normalizing text for language kn-IN...
+[TTS] Normalized result: ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Pre-normalized text (63 chars): ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Attempting TTS (inline style (full), model: gemini-3.1-flash-tts-preview, 63 chars)
+[TTS] Success (inline style (full))
+[52/360] kn-IN | Charon | cinematic-trailer -> generated (10.8s, 418604b)
+[TTS] Synthesizing with Gemini: {
+  model: 'gemini-3.1-flash-tts-preview',
+  voiceName: 'Charon',
+  geminiVoice: 'Charon',
+  voiceLabel: 'Charon - Kannada',
+  languageCode: 'kn-IN',
+  textLength: 63
+}
+[TTS] Pre-normalizing mixed-language text to kn-IN...
+[TTS] Normalizing text for language kn-IN...
+[TTS] Normalized result: ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Pre-normalized text (63 chars): ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Attempting TTS (inline style (full), model: gemini-3.1-flash-tts-preview, 63 chars)
+[TTS] Success (inline style (full))
+[53/360] kn-IN | Charon | luxury-premium -> generated (8.8s, 299564b)
+[TTS] Synthesizing with Gemini: {
+  model: 'gemini-3.1-flash-tts-preview',
+  voiceName: 'Charon',
+  geminiVoice: 'Charon',
+  voiceLabel: 'Charon - Kannada',
+  languageCode: 'kn-IN',
+  textLength: 63
+}
+[TTS] Pre-normalizing mixed-language text to kn-IN...
+[TTS] Normalizing text for language kn-IN...
+[TTS] Normalized result: ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Pre-normalized text (63 chars): ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Attempting TTS (inline style (full), model: gemini-3.1-flash-tts-preview, 63 chars)
+[TTS] Success (inline style (full))
+[54/360] kn-IN | Charon | social-hype -> generated (6.7s, 215084b)
+[TTS] Synthesizing with Gemini: {
+  model: 'gemini-3.1-flash-tts-preview',
+  voiceName: 'Despina',
+  geminiVoice: 'Despina',
+  voiceLabel: 'Despina - Kannada',
+  languageCode: 'kn-IN',
+  textLength: 63
+}
+[TTS] Pre-normalizing mixed-language text to kn-IN...
+[TTS] Normalizing text for language kn-IN...
+[TTS] Normalized result: ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Pre-normalized text (63 chars): ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Attempting TTS (inline style (full), model: gemini-3.1-flash-tts-preview, 63 chars)
+[TTS] Success (inline style (full))
+[55/360] kn-IN | Despina | voice-default -> generated (7.3s, 243884b)
+[TTS] Synthesizing with Gemini: {
+  model: 'gemini-3.1-flash-tts-preview',
+  voiceName: 'Despina',
+  geminiVoice: 'Despina',
+  voiceLabel: 'Despina - Kannada',
+  languageCode: 'kn-IN',
+  textLength: 63
+}
+[TTS] Pre-normalizing mixed-language text to kn-IN...
+[TTS] Normalizing text for language kn-IN...
+[TTS] Normalized result: ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Pre-normalized text (63 chars): ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Attempting TTS (inline style (full), model: gemini-3.1-flash-tts-preview, 63 chars)
+[TTS] Success (inline style (full))
+[56/360] kn-IN | Despina | natural -> generated (8.4s, 257324b)
+[TTS] Synthesizing with Gemini: {
+  model: 'gemini-3.1-flash-tts-preview',
+  voiceName: 'Despina',
+  geminiVoice: 'Despina',
+  voiceLabel: 'Despina - Kannada',
+  languageCode: 'kn-IN',
+  textLength: 63
+}
+[TTS] Pre-normalizing mixed-language text to kn-IN...
+[TTS] Normalizing text for language kn-IN...
+[TTS] Normalized result: ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Pre-normalized text (63 chars): ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Attempting TTS (inline style (full), model: gemini-3.1-flash-tts-preview, 63 chars)
+[TTS] Success (inline style (full))
+[57/360] kn-IN | Despina | energetic-ad -> generated (7.7s, 259244b)
+[TTS] Synthesizing with Gemini: {
+  model: 'gemini-3.1-flash-tts-preview',
+  voiceName: 'Despina',
+  geminiVoice: 'Despina',
+  voiceLabel: 'Despina - Kannada',
+  languageCode: 'kn-IN',
+  textLength: 63
+}
+[TTS] Pre-normalizing mixed-language text to kn-IN...
+[TTS] Normalizing text for language kn-IN...
+[TTS] Normalized result: ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Pre-normalized text (63 chars): ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Attempting TTS (inline style (full), model: gemini-3.1-flash-tts-preview, 63 chars)
+[TTS] Success (inline style (full))
+[58/360] kn-IN | Despina | cinematic-trailer -> generated (9.0s, 387884b)
+[TTS] Synthesizing with Gemini: {
+  model: 'gemini-3.1-flash-tts-preview',
+  voiceName: 'Despina',
+  geminiVoice: 'Despina',
+  voiceLabel: 'Despina - Kannada',
+  languageCode: 'kn-IN',
+  textLength: 63
+}
+[TTS] Pre-normalizing mixed-language text to kn-IN...
+[TTS] Normalizing text for language kn-IN...
+[TTS] Normalized result: ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Pre-normalized text (63 chars): ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Attempting TTS (inline style (full), model: gemini-3.1-flash-tts-preview, 63 chars)
+[TTS] Success (inline style (full))
+[59/360] kn-IN | Despina | luxury-premium -> generated (10.3s, 311084b)
+[TTS] Synthesizing with Gemini: {
+  model: 'gemini-3.1-flash-tts-preview',
+  voiceName: 'Despina',
+  geminiVoice: 'Despina',
+  voiceLabel: 'Despina - Kannada',
+  languageCode: 'kn-IN',
+  textLength: 63
+}
+[TTS] Pre-normalizing mixed-language text to kn-IN...
+[TTS] Normalizing text for language kn-IN...
+[TTS] Normalized result: ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Pre-normalized text (63 chars): ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Attempting TTS (inline style (full), model: gemini-3.1-flash-tts-preview, 63 chars)
+[TTS] Success (inline style (full))
+[60/360] kn-IN | Despina | social-hype -> generated (9.1s, 251564b)
+[61/360] kn-IN | Enceladus | voice-default -> already cached
+[TTS] Synthesizing with Gemini: {
+  model: 'gemini-3.1-flash-tts-preview',
+  voiceName: 'Enceladus',
+  geminiVoice: 'Enceladus',
+  voiceLabel: 'Enceladus - Kannada',
+  languageCode: 'kn-IN',
+  textLength: 63
+}
+[TTS] Pre-normalizing mixed-language text to kn-IN...
+[TTS] Normalizing text for language kn-IN...
+[TTS] Normalized result: ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Pre-normalized text (63 chars): ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Attempting TTS (inline style (full), model: gemini-3.1-flash-tts-preview, 63 chars)
+[TTS] Success (inline style (full))
+[62/360] kn-IN | Enceladus | natural -> generated (7.0s, 230444b)
+[TTS] Synthesizing with Gemini: {
+  model: 'gemini-3.1-flash-tts-preview',
+  voiceName: 'Enceladus',
+  geminiVoice: 'Enceladus',
+  voiceLabel: 'Enceladus - Kannada',
+  languageCode: 'kn-IN',
+  textLength: 63
+}
+[TTS] Pre-normalizing mixed-language text to kn-IN...
+[TTS] Normalizing text for language kn-IN...
+[TTS] Normalized result: ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Pre-normalized text (63 chars): ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Attempting TTS (inline style (full), model: gemini-3.1-flash-tts-preview, 63 chars)
+[TTS] Success (inline style (full))
+[63/360] kn-IN | Enceladus | energetic-ad -> generated (7.2s, 226604b)
+[TTS] Synthesizing with Gemini: {
+  model: 'gemini-3.1-flash-tts-preview',
+  voiceName: 'Enceladus',
+  geminiVoice: 'Enceladus',
+  voiceLabel: 'Enceladus - Kannada',
+  languageCode: 'kn-IN',
+  textLength: 63
+}
+[TTS] Pre-normalizing mixed-language text to kn-IN...
+[TTS] Normalizing text for language kn-IN...
+[TTS] Normalized result: ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Pre-normalized text (63 chars): ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Attempting TTS (inline style (full), model: gemini-3.1-flash-tts-preview, 63 chars)
+[TTS] Success (inline style (full))
+[64/360] kn-IN | Enceladus | cinematic-trailer -> generated (9.7s, 416684b)
+[TTS] Synthesizing with Gemini: {
+  model: 'gemini-3.1-flash-tts-preview',
+  voiceName: 'Enceladus',
+  geminiVoice: 'Enceladus',
+  voiceLabel: 'Enceladus - Kannada',
+  languageCode: 'kn-IN',
+  textLength: 63
+}
+[TTS] Pre-normalizing mixed-language text to kn-IN...
+[TTS] Normalizing text for language kn-IN...
+[TTS] Normalized result: ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Pre-normalized text (63 chars): ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Attempting TTS (inline style (full), model: gemini-3.1-flash-tts-preview, 63 chars)
+[TTS] Success (inline style (full))
+[65/360] kn-IN | Enceladus | luxury-premium -> generated (9.6s, 337964b)
+[TTS] Synthesizing with Gemini: {
+  model: 'gemini-3.1-flash-tts-preview',
+  voiceName: 'Enceladus',
+  geminiVoice: 'Enceladus',
+  voiceLabel: 'Enceladus - Kannada',
+  languageCode: 'kn-IN',
+  textLength: 63
+}
+[TTS] Pre-normalizing mixed-language text to kn-IN...
+[TTS] Normalizing text for language kn-IN...
+[TTS] Normalized result: ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Pre-normalized text (63 chars): ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Attempting TTS (inline style (full), model: gemini-3.1-flash-tts-preview, 63 chars)
+[TTS] Success (inline style (full))
+[66/360] kn-IN | Enceladus | social-hype -> generated (7.6s, 211244b)
+[TTS] Synthesizing with Gemini: {
+  model: 'gemini-3.1-flash-tts-preview',
+  voiceName: 'Erinome',
+  geminiVoice: 'Erinome',
+  voiceLabel: 'Erinome - Kannada',
+  languageCode: 'kn-IN',
+  textLength: 63
+}
+[TTS] Pre-normalizing mixed-language text to kn-IN...
+[TTS] Normalizing text for language kn-IN...
+[TTS] Normalized result: ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Pre-normalized text (63 chars): ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Attempting TTS (inline style (full), model: gemini-3.1-flash-tts-preview, 63 chars)
+[TTS] Success (inline style (full))
+[67/360] kn-IN | Erinome | voice-default -> generated (8.1s, 251564b)
+[TTS] Synthesizing with Gemini: {
+  model: 'gemini-3.1-flash-tts-preview',
+  voiceName: 'Erinome',
+  geminiVoice: 'Erinome',
+  voiceLabel: 'Erinome - Kannada',
+  languageCode: 'kn-IN',
+  textLength: 63
+}
+[TTS] Pre-normalizing mixed-language text to kn-IN...
+[TTS] Normalizing text for language kn-IN...
+[TTS] Normalized result: ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Pre-normalized text (63 chars): ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Attempting TTS (inline style (full), model: gemini-3.1-flash-tts-preview, 63 chars)
+[TTS] Success (inline style (full))
+[68/360] kn-IN | Erinome | natural -> generated (7.9s, 240044b)
+[TTS] Synthesizing with Gemini: {
+  model: 'gemini-3.1-flash-tts-preview',
+  voiceName: 'Erinome',
+  geminiVoice: 'Erinome',
+  voiceLabel: 'Erinome - Kannada',
+  languageCode: 'kn-IN',
+  textLength: 63
+}
+[TTS] Pre-normalizing mixed-language text to kn-IN...
+[TTS] Normalizing text for language kn-IN...
+[TTS] Normalized result: ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Pre-normalized text (63 chars): ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Attempting TTS (inline style (full), model: gemini-3.1-flash-tts-preview, 63 chars)
+[TTS] Success (inline style (full))
+[69/360] kn-IN | Erinome | energetic-ad -> generated (9.6s, 247724b)
+[TTS] Synthesizing with Gemini: {
+  model: 'gemini-3.1-flash-tts-preview',
+  voiceName: 'Erinome',
+  geminiVoice: 'Erinome',
+  voiceLabel: 'Erinome - Kannada',
+  languageCode: 'kn-IN',
+  textLength: 63
+}
+[TTS] Pre-normalizing mixed-language text to kn-IN...
+[TTS] Normalizing text for language kn-IN...
+[TTS] Normalized result: ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Pre-normalized text (63 chars): ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Attempting TTS (inline style (full), model: gemini-3.1-flash-tts-preview, 63 chars)
+[TTS] Success (inline style (full))
+[70/360] kn-IN | Erinome | cinematic-trailer -> generated (12.2s, 407084b)
+[TTS] Synthesizing with Gemini: {
+  model: 'gemini-3.1-flash-tts-preview',
+  voiceName: 'Erinome',
+  geminiVoice: 'Erinome',
+  voiceLabel: 'Erinome - Kannada',
+  languageCode: 'kn-IN',
+  textLength: 63
+}
+[TTS] Pre-normalizing mixed-language text to kn-IN...
+[TTS] Normalizing text for language kn-IN...
+[TTS] Normalized result: ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Pre-normalized text (63 chars): ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Attempting TTS (inline style (full), model: gemini-3.1-flash-tts-preview, 63 chars)
+[TTS] Success (inline style (full))
+[71/360] kn-IN | Erinome | luxury-premium -> generated (8.4s, 293804b)
+[TTS] Synthesizing with Gemini: {
+  model: 'gemini-3.1-flash-tts-preview',
+  voiceName: 'Erinome',
+  geminiVoice: 'Erinome',
+  voiceLabel: 'Erinome - Kannada',
+  languageCode: 'kn-IN',
+  textLength: 63
+}
+[TTS] Pre-normalizing mixed-language text to kn-IN...
+[TTS] Normalizing text for language kn-IN...
+[TTS] Normalized result: ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Pre-normalized text (63 chars): ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Attempting TTS (inline style (full), model: gemini-3.1-flash-tts-preview, 63 chars)
+[TTS] Success (inline style (full))
+[72/360] kn-IN | Erinome | social-hype -> generated (6.8s, 234284b)
+[TTS] Synthesizing with Gemini: {
+  model: 'gemini-3.1-flash-tts-preview',
+  voiceName: 'Fenrir',
+  geminiVoice: 'Fenrir',
+  voiceLabel: 'Fenrir - Kannada',
+  languageCode: 'kn-IN',
+  textLength: 63
+}
+[TTS] Pre-normalizing mixed-language text to kn-IN...
+[TTS] Normalizing text for language kn-IN...
+[TTS] Normalized result: ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Pre-normalized text (63 chars): ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Attempting TTS (inline style (full), model: gemini-3.1-flash-tts-preview, 63 chars)
+[TTS] Success (inline style (full))
+[73/360] kn-IN | Fenrir | voice-default -> generated (7.3s, 236204b)
+[TTS] Synthesizing with Gemini: {
+  model: 'gemini-3.1-flash-tts-preview',
+  voiceName: 'Fenrir',
+  geminiVoice: 'Fenrir',
+  voiceLabel: 'Fenrir - Kannada',
+  languageCode: 'kn-IN',
+  textLength: 63
+}
+[TTS] Pre-normalizing mixed-language text to kn-IN...
+[TTS] Normalizing text for language kn-IN...
+[TTS] Normalized result: ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Pre-normalized text (63 chars): ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Attempting TTS (inline style (full), model: gemini-3.1-flash-tts-preview, 63 chars)
+[TTS] Success (inline style (full))
+[74/360] kn-IN | Fenrir | natural -> generated (7.4s, 232364b)
+[TTS] Synthesizing with Gemini: {
+  model: 'gemini-3.1-flash-tts-preview',
+  voiceName: 'Fenrir',
+  geminiVoice: 'Fenrir',
+  voiceLabel: 'Fenrir - Kannada',
+  languageCode: 'kn-IN',
+  textLength: 63
+}
+[TTS] Pre-normalizing mixed-language text to kn-IN...
+[TTS] Normalizing text for language kn-IN...
+[TTS] Normalized result: ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Pre-normalized text (63 chars): ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Attempting TTS (inline style (full), model: gemini-3.1-flash-tts-preview, 63 chars)
+[TTS] Success (inline style (full))
+[75/360] kn-IN | Fenrir | energetic-ad -> generated (8.3s, 257324b)
+[TTS] Synthesizing with Gemini: {
+  model: 'gemini-3.1-flash-tts-preview',
+  voiceName: 'Fenrir',
+  geminiVoice: 'Fenrir',
+  voiceLabel: 'Fenrir - Kannada',
+  languageCode: 'kn-IN',
+  textLength: 63
+}
+[TTS] Pre-normalizing mixed-language text to kn-IN...
+[TTS] Normalizing text for language kn-IN...
+[TTS] Normalized result: ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Pre-normalized text (63 chars): ನಮಸ್ಕಾರ, ಇದು ನಿಮ್ಮ voice preview. ಈ style ಹೇಗಿದೆ ಅಂತ ಕೇಳಿ ನೋಡಿ....
+[TTS] Attempting TTS (inline style (full), model: gemini-3.1-flash-tts-preview, 63 chars)

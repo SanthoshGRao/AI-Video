@@ -1,0 +1,198 @@
+import { NextResponse } from "next/server";
+import type { Prisma } from "@/generated/prisma/client";
+import prisma from "@/lib/db/prisma";
+import { requireProjectAccess } from "@/lib/auth/require-project";
+import { handleRouteError } from "@/lib/api/errors";
+import { DEFAULT_TIMELINE_SETTINGS } from "@/lib/timeline/defaults";
+import { syncTrackClipIds } from "@/lib/timeline/parse";
+import type { TimelineClip, TimelineSettings, TimelineTextLayer, TimelineTrack, TimelineTransition } from "@/lib/timeline/types";
+
+type RouteContext = { params: Promise<{ id: string }> };
+
+type TitleRow = { id: string; text: string; startMs: number; endMs: number; category?: string };
+type TitleStyleInput = {
+  preset?: string;
+  fontFamily?: string;
+  fontSize?: number;
+  fontWeight?: number;
+  color?: string;
+  backgroundOpacity?: number;
+  fontStyle?: "normal" | "italic";
+  textDecoration?: "none" | "underline";
+  letterSpacing?: number;
+  shadow?: boolean;
+};
+
+function normalizeTitleStyle(style: unknown): Required<TitleStyleInput> {
+  const input = style && typeof style === "object" ? style as TitleStyleInput : {};
+  const backgroundOpacity = typeof input.backgroundOpacity === "number"
+    ? Math.min(100, Math.max(0, input.backgroundOpacity))
+    : 35;
+
+  return {
+    preset: typeof input.preset === "string" ? input.preset : "clean_white",
+    fontFamily: typeof input.fontFamily === "string" ? input.fontFamily : "Montserrat, sans-serif",
+    fontSize: typeof input.fontSize === "number" ? Math.min(84, Math.max(32, input.fontSize)) : 56,
+    fontWeight: typeof input.fontWeight === "number" ? input.fontWeight : 900,
+    color: typeof input.color === "string" ? input.color : "#ffffff",
+    backgroundOpacity,
+    fontStyle: input.fontStyle === "italic" ? "italic" : "normal",
+    textDecoration: input.textDecoration === "underline" ? "underline" : "none",
+    letterSpacing: typeof input.letterSpacing === "number" ? Math.min(6, Math.max(0, input.letterSpacing)) : 0,
+    shadow: input.shadow !== false,
+  };
+}
+
+export async function PUT(request: Request, context: RouteContext) {
+  try {
+    const { id } = await context.params;
+    await requireProjectAccess(id);
+    const body = await request.json();
+    const titles = Array.isArray(body.titles) ? (body.titles as TitleRow[]) : [];
+    const titleStyle = normalizeTitleStyle(body.titleStyle);
+
+    const latest = await prisma.timeline.findFirst({
+      where: { projectId: id },
+      orderBy: [
+        { version: "desc" },
+        { createdAt: "desc" }
+      ],
+    });
+    const clips: Record<string, TimelineClip> = latest?.clips && typeof latest.clips === "object"
+      ? { ...(latest.clips as unknown as Record<string, TimelineClip>) }
+      : {};
+
+    // Style-only save: with no title rows to rebuild from (e.g. the project
+    // has no extracted facts but the timeline was seeded with titles in the
+    // editor), restyle the existing title clips in place. Falling through to
+    // the rebuild path would delete every title on the timeline.
+    if (titles.length === 0) {
+      let restyled = false;
+      for (const clip of Object.values(clips)) {
+        if ((clip?.properties?.textOverlayMeta as any)?.category === "title" || clip?.trackId === "track-facts") {
+          clip.properties = {
+            ...(clip.properties ?? {}),
+            style: {
+              ...((clip.properties?.style as Record<string, unknown>) ?? {}),
+              fontFamily: titleStyle.fontFamily,
+              fontSize: titleStyle.fontSize,
+              fontWeight: titleStyle.fontWeight,
+              fontStyle: titleStyle.fontStyle,
+              color: titleStyle.color,
+              textDecoration: titleStyle.textDecoration,
+              letterSpacing: titleStyle.letterSpacing,
+              backgroundColor: `rgba(0,0,0,${titleStyle.backgroundOpacity / 100})`,
+              textShadow: titleStyle.shadow ? "0 2px 8px rgba(0,0,0,0.65)" : "none",
+            },
+            textOverlayMeta: { ...((clip.properties?.textOverlayMeta as Record<string, unknown>) ?? {}), titleStyle },
+          };
+          restyled = true;
+        }
+      }
+      if (restyled && latest) {
+        const timeline = await prisma.timeline.update({
+          where: { id: latest.id },
+          data: { clips: clips as Prisma.InputJsonValue },
+        });
+        return NextResponse.json({ timeline });
+      }
+      return NextResponse.json({ timeline: latest });
+    }
+
+    // Preserve any position/size the user dragged in the editor for a title
+    // that survives this rebuild (same `title-${id}`) — otherwise every edit
+    // to text/timing/style snapped every title back to the default spot.
+    const previousLayout = new Map<string, { position?: unknown; size?: unknown }>();
+    for (const [clipId, clip] of Object.entries(clips)) {
+      if ((clip?.properties?.textOverlayMeta as any)?.category === "title" || clip?.trackId === "track-facts" || (clip?.properties?.textOverlayMeta as any)?.isAutoGenerated) {
+        previousLayout.set(clipId, { position: clip.properties?.position, size: clip.properties?.size });
+        delete clips[clipId];
+      }
+    }
+
+    // Default position: horizontally centered on the timeline's actual canvas
+    // width (not a hardcoded 1080px assumption) so it stays centered under any
+    // aspect ratio, matching mapTitleStyleToStage's percentage-based default.
+    const canvasSettings = (latest?.settings as unknown as TimelineSettings | undefined) ?? DEFAULT_TIMELINE_SETTINGS;
+    const defaultWidth = Math.round(canvasSettings.width * 0.85);
+    const defaultPosition = { x: Math.round((canvasSettings.width - defaultWidth) / 2), y: 64 };
+    const defaultSize = { width: defaultWidth, height: 140 };
+
+    for (const title of titles) {
+      const clipId = `title-${title.id}`;
+      const previous = previousLayout.get(clipId);
+      clips[clipId] = {
+        id: clipId,
+        trackId: "track-text",
+        type: "text",
+        startTime: Math.max(0, Number(title.startMs) || 0),
+        endTime: Math.max(Number(title.startMs) + 250, Number(title.endMs) || 0),
+        trimStart: 0,
+        trimEnd: Math.max(250, (Number(title.endMs) || 0) - (Number(title.startMs) || 0)),
+        properties: {
+          text: title.text,
+          position: previous?.position ?? defaultPosition,
+          size: previous?.size ?? defaultSize,
+          rotation: 0,
+          opacity: 1,
+          style: {
+            fontFamily: titleStyle.fontFamily,
+            fontSize: titleStyle.fontSize,
+            fontWeight: titleStyle.fontWeight,
+            fontStyle: titleStyle.fontStyle,
+            color: titleStyle.color,
+            textAlign: "center",
+            backgroundColor: `rgba(0,0,0,${titleStyle.backgroundOpacity / 100})`,
+            textTransform: "none",
+            textDecoration: titleStyle.textDecoration,
+            letterSpacing: titleStyle.letterSpacing,
+            borderRadius: 16,
+            boxShadow: titleStyle.shadow ? { x: 4, y: 4, blur: 0, color: "#000000" } : undefined,
+            textShadow: titleStyle.shadow ? "0 2px 8px rgba(0,0,0,0.65)" : "none",
+          },
+          textOverlayMeta: { category: "title", source: "fact", factCategory: title.category ?? "Fact", titleStyle },
+        },
+      };
+    }
+
+    const defaultTitleTrack: TimelineTrack = { id: "track-text", type: "text", name: "Titles", muted: false, locked: false, clipIds: [] };
+    const tracks = Array.isArray(latest?.tracks)
+      ? [...(latest.tracks as unknown as TimelineTrack[])]
+      : [defaultTitleTrack];
+    if (!tracks.some((track) => track.id === "track-text")) tracks.push(defaultTitleTrack);
+
+    const timelineDoc = syncTrackClipIds({
+      settings: (latest?.settings as unknown as TimelineSettings | undefined) ?? DEFAULT_TIMELINE_SETTINGS,
+      tracks,
+      clips,
+      transitions: (latest?.transitions as unknown as TimelineTransition[] | undefined) ?? [],
+      textLayers: (latest?.textLayers as unknown as TimelineTextLayer[] | undefined) ?? [],
+    });
+
+    const timeline = latest
+      ? await prisma.timeline.update({
+          where: { id: latest.id },
+          data: {
+            tracks: timelineDoc.tracks as unknown as Prisma.InputJsonValue,
+            clips: timelineDoc.clips as Prisma.InputJsonValue,
+          },
+        })
+      : await prisma.timeline.create({
+          data: {
+            projectId: id,
+            version: 1,
+            tracks: timelineDoc.tracks as unknown as Prisma.InputJsonValue,
+            clips: timelineDoc.clips as Prisma.InputJsonValue,
+            transitions: timelineDoc.transitions as unknown as Prisma.InputJsonValue,
+            textLayers: timelineDoc.textLayers as unknown as Prisma.InputJsonValue,
+            settings: timelineDoc.settings as unknown as Prisma.InputJsonValue,
+            isAutosave: false,
+            isAiGenerated: false,
+          },
+        });
+
+    return NextResponse.json({ timeline });
+  } catch (error) {
+    return handleRouteError(error);
+  }
+}

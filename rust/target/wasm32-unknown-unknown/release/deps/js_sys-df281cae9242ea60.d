@@ -1,0 +1,10 @@
+C:\Users\santh\OneDrive\Desktop\AI Video\rust\target\wasm32-unknown-unknown\release\deps\js_sys-df281cae9242ea60.d: C:\Users\santh\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\js-sys-0.3.103\src\lib.rs C:\Users\santh\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\js-sys-0.3.103\src\futures\mod.rs C:\Users\santh\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\js-sys-0.3.103\src\futures\queue.rs C:\Users\santh\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\js-sys-0.3.103\src\futures\task\singlethread.rs
+
+C:\Users\santh\OneDrive\Desktop\AI Video\rust\target\wasm32-unknown-unknown\release\deps\libjs_sys-df281cae9242ea60.rlib: C:\Users\santh\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\js-sys-0.3.103\src\lib.rs C:\Users\santh\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\js-sys-0.3.103\src\futures\mod.rs C:\Users\santh\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\js-sys-0.3.103\src\futures\queue.rs C:\Users\santh\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\js-sys-0.3.103\src\futures\task\singlethread.rs
+
+C:\Users\santh\OneDrive\Desktop\AI Video\rust\target\wasm32-unknown-unknown\release\deps\libjs_sys-df281cae9242ea60.rmeta: C:\Users\santh\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\js-sys-0.3.103\src\lib.rs C:\Users\santh\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\js-sys-0.3.103\src\futures\mod.rs C:\Users\santh\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\js-sys-0.3.103\src\futures\queue.rs C:\Users\santh\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\js-sys-0.3.103\src\futures\task\singlethread.rs
+
+C:\Users\santh\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\js-sys-0.3.103\src\lib.rs:
+C:\Users\santh\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\js-sys-0.3.103\src\futures\mod.rs:
+C:\Users\santh\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\js-sys-0.3.103\src\futures\queue.rs:
+C:\Users\santh\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\js-sys-0.3.103\src\futures\task\singlethread.rs:

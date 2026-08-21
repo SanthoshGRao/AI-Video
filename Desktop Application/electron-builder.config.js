@@ -15,10 +15,14 @@ module.exports = {
   productName: "Video Studio",
   copyright: "Copyright © 2025 Video Studio",
 
+  // Written into resources/app-update.yml, which is where electron-updater
+  // looks for releases. The repo was renamed Landing-Page -> AI-Video;
+  // GitHub redirects the old name, but relying on that redirect for the
+  // update channel is a needless dependency, so name it directly.
   publish: {
     provider: "github",
     owner: "SanthoshGRao",
-    repo: "Landing-Page",
+    repo: "AI-Video",
   },
 
   directories: {

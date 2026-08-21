@@ -5,24 +5,20 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Video Studio</title>
 <style>
-  /* ──────────────────────────────────────────────────
-     Splash Screen — warm, professional creative-tool aesthetic
-     Charcoal + copper/bronze. No purple. No AI sparkles.
-     ────────────────────────────────────────────────── */
-
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
   :root {
-    --bg:          #111113;
-    --surface:     #1a1a1d;
-    --border:      #2a2a2e;
+    --bg:          #090a0f;
+    --surface:     #12151e;
+    --border:      #232838;
     --accent:      #2E8F63;
-    --accent-dim:  rgba(46, 143, 99, 0.35);
-    --text:        #eae6e1;
-    --text-sub:    #8a8580;
-    --text-muted:  #5a5550;
-    --danger:      #cf6b6b;
-    --font:        "Segoe UI Variable", "Segoe UI", system-ui, -apple-system, sans-serif;
+    --accent-hover:#34A870;
+    --accent-dim:  rgba(46, 143, 99, 0.2);
+    --text:        #F8FAFC;
+    --text-sub:    #94A3B8;
+    --text-muted:  #64748B;
+    --danger:      #F87171;
+    --font:        "Inter", "Segoe UI Variable", "Segoe UI", system-ui, -apple-system, sans-serif;
   }
 
   html, body {
@@ -43,14 +39,14 @@
     -webkit-app-region: drag;
   }
 
-  /* Subtle warm ambient glow */
+  /* Subtle ambient glow */
   body::before {
     content: "";
     position: fixed;
     inset: 0;
     background:
-      radial-gradient(ellipse 70% 50% at 30% 25%, rgba(46, 143, 99, 0.05), transparent 60%),
-      radial-gradient(ellipse 50% 40% at 75% 70%, rgba(46, 143, 99, 0.03), transparent 50%);
+      radial-gradient(ellipse 70% 50% at 30% 25%, rgba(46, 143, 99, 0.08), transparent 60%),
+      radial-gradient(ellipse 50% 40% at 75% 70%, rgba(46, 143, 99, 0.05), transparent 50%);
     pointer-events: none;
   }
 
@@ -81,7 +77,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 0 30px var(--accent-dim), inset 0 0 20px rgba(46, 143, 99, 0.06);
+    box-shadow: 0 0 30px var(--accent-dim), inset 0 0 20px rgba(46, 143, 99, 0.1);
   }
 
   /* Play triangle */
@@ -124,7 +120,7 @@
     text-transform: uppercase;
     color: var(--accent);
     margin-top: 6px;
-    opacity: 0.85;
+    opacity: 0.9;
   }
 
   /* ── Status area ── */
@@ -163,7 +159,7 @@
   .progress-bar {
     height: 100%;
     width: 0%;
-    background: linear-gradient(90deg, var(--accent), #4FAD7E);
+    background: linear-gradient(90deg, var(--accent), #34A870);
     border-radius: 0 2px 2px 0;
     transition: width 0.6s cubic-bezier(0.25, 0.8, 0.25, 1);
   }
@@ -173,7 +169,7 @@
     position: fixed;
     bottom: 12px;
     right: 16px;
-    font-size: 9px;
+    font-size: 10px;
     color: var(--text-muted);
     font-weight: 500;
     letter-spacing: 0.05em;
@@ -181,8 +177,8 @@
 
   /* ── Pulse animation for the logo ── */
   @keyframes gentle-pulse {
-    0%, 100% { box-shadow: 0 0 30px var(--accent-dim), inset 0 0 20px rgba(46, 143, 99, 0.06); }
-    50%      { box-shadow: 0 0 40px var(--accent-dim), inset 0 0 25px rgba(46, 143, 99, 0.08); }
+    0%, 100% { box-shadow: 0 0 30px var(--accent-dim), inset 0 0 20px rgba(46, 143, 99, 0.1); }
+    50%      { box-shadow: 0 0 40px var(--accent-dim), inset 0 0 25px rgba(46, 143, 99, 0.18); }
   }
 
   .logo-frame {
@@ -209,7 +205,7 @@
     <div class="progress-bar" id="progressBar"></div>
   </div>
 
-  <span class="version">v1.0.0</span>
+  <span class="version">v1.1.6</span>
 
   <script>
     const statusEl = document.getElementById("statusText");
@@ -226,7 +222,7 @@
         statusEl.textContent = message;
         statusEl.className = "status-text error";
         barEl.style.width = "100%";
-        barEl.style.background = "#cf6b6b";
+        barEl.style.background = "#F87171";
       });
     }
   </script>

@@ -39,13 +39,13 @@ const STYLE_CARD_IDLE = "border-slate-200 hover:border-indigo-200 hover:bg-slate
 function getPitchLabel(pitch: number): string {
   switch (pitch) {
     case 2:
-      return "Cartoon Squeaky (+2)";
+      return "Cartoon";
     case 1:
-      return "High Pitch / Funny (+1)";
+      return "High Pitch";
     case -1:
-      return "Low Pitch (-1)";
+      return "Low Pitch";
     case -2:
-      return "Deep Bass (-2)";
+      return "Deep Bass";
     default:
       return "Normal Pitch (0)";
   }
@@ -125,7 +125,7 @@ export function AvatarDialog({
   const deletePreset = useCallback(
     (id: string) => {
       onPresetsChange(presets.filter((p) => p.id !== id));
-      void fetch(`/api/voice-presets/${id}`, { method: "DELETE" }).catch(() => {});
+      void fetch(`/api/voice-presets/${id}`, { method: "DELETE" }).catch(() => { });
     },
     [presets, onPresetsChange]
   );
@@ -341,9 +341,7 @@ export function AvatarDialog({
                       <Sliders className="w-4 h-4 text-indigo-600" />
                       Voice Pitch
                     </label>
-                    <p className="text-xs text-slate-500">
-                      Set pitch level (high pitch feels funny & comedic, low pitch feels deep).
-                    </p>
+
                   </div>
                   <span
                     className={cn(
@@ -351,8 +349,8 @@ export function AvatarDialog({
                       (value.pitch ?? 0) > 0
                         ? "bg-amber-100 text-amber-800 border-amber-200"
                         : (value.pitch ?? 0) < 0
-                        ? "bg-indigo-100 text-indigo-800 border-indigo-200"
-                        : "bg-slate-100 text-slate-700 border-slate-200"
+                          ? "bg-indigo-100 text-indigo-800 border-indigo-200"
+                          : "bg-slate-100 text-slate-700 border-slate-200"
                     )}
                   >
                     {getPitchLabel(value.pitch ?? 0)}
@@ -402,7 +400,7 @@ export function AvatarDialog({
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
                     <label className="text-sm font-bold text-slate-900">Speaking Speed</label>
-                    <p className="text-xs text-slate-500">Control pace of the voice delivery.</p>
+                    
                   </div>
                   <span className="text-xs font-semibold px-2.5 py-0.5 rounded bg-slate-100 text-slate-700">
                     {(value.pace ?? 1.0).toFixed(1)}x

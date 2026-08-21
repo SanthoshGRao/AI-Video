@@ -14,6 +14,15 @@
  */
 
 import { app, BrowserWindow, ipcMain, shell } from "electron";
+
+// Suppress non-fatal embedded-postgres / Chromium GPU cache cleanup warnings
+process.on("unhandledRejection", (reason) => {
+  const msg = reason instanceof Error ? reason.message : String(reason);
+  if (msg.includes("done is not a function") || msg.includes("cache_util_win")) {
+    return;
+  }
+  console.warn("[main] Unhandled rejection:", reason);
+});
 import path from "path";
 import fs from "fs";
 import {

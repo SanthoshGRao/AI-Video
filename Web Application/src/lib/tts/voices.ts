@@ -595,57 +595,57 @@ export function buildVoiceModifiersPrompt(mods?: {
 
   if (typeof mods.pitch === "number" && mods.pitch !== 0) {
     if (mods.pitch === 1) {
-      lines.push("* Voice Pitch: High pitch. Speak in a light, cheerful, higher-pitched, funny tone.");
+      lines.push("light, cheerful, higher-pitched");
     } else if (mods.pitch === 2) {
-      lines.push("* Voice Pitch: Very High pitch / Cartoon. Speak in a comic, squeaky, high-pitched funny character voice.");
+      lines.push("squeaky, comic, high-pitched cartoon character");
     } else if (mods.pitch === -1) {
-      lines.push("* Voice Pitch: Low pitch. Speak in a lower-pitched, deeper, warm tone.");
+      lines.push("lower-pitched, deeper, warm");
     } else if (mods.pitch === -2) {
-      lines.push("* Voice Pitch: Very Low pitch / Deep. Speak in a heavy, deep booming bass voice.");
+      lines.push("heavy, deep booming bass");
     }
   }
 
   if (typeof mods.pace === "number" && mods.pace !== 1.0) {
     if (mods.pace > 1.1) {
-      lines.push(`* Voice Pace: Fast (${mods.pace.toFixed(1)}x). Speak briskly with rapid speech speed.`);
+      lines.push("brisk, rapid-fire");
     } else if (mods.pace < 0.9) {
-      lines.push(`* Voice Pace: Slow (${mods.pace.toFixed(1)}x). Speak deliberately and slowly with clear spacing.`);
+      lines.push("slow, deliberate");
     }
   }
 
   if (mods.emotion && mods.emotion !== "normal") {
     switch (mods.emotion) {
       case "funny":
-        lines.push("* Vocal Emotion & Mood: Funny and humorous. Deliver the lines with comic timing and playful expression.");
+        lines.push("humorous, comic, playful");
         break;
       case "excited":
-        lines.push("* Vocal Emotion & Mood: Excited and enthusiastic. Deliver the lines with high energy and joy.");
+        lines.push("highly excited, enthusiastic, joyful");
         break;
       case "dramatic":
-        lines.push("* Vocal Emotion & Mood: Dramatic. Deliver with intensity and deliberate dramatic pauses.");
+        lines.push("intense, dramatic, emotional");
         break;
       case "whispering":
-        lines.push("* Vocal Emotion & Mood: Soft / Whispering. Deliver in a soft, quiet, intimate voice.");
+        lines.push("soft, quiet, whispering");
         break;
       case "sarcastic":
-        lines.push("* Vocal Emotion & Mood: Sarcastic. Deliver with a playful, ironic, sarcastic tone.");
+        lines.push("ironic, sarcastic, playful");
         break;
       case "robotic":
-        lines.push("* Vocal Emotion & Mood: Monotone / Robotic. Deliver with steady, flat, mechanical cadence.");
+        lines.push("flat, monotone, robotic");
         break;
     }
   }
 
   if (mods.energy && mods.energy !== "balanced") {
     if (mods.energy === "high") {
-      lines.push("* Vocal Energy: High energy, loud and dynamic projection.");
+      lines.push("high-energy, dynamic");
     } else if (mods.energy === "relaxed") {
-      lines.push("* Vocal Energy: Low energy, calm and relaxed projection.");
+      lines.push("low-energy, calm, relaxed");
     }
   }
 
   if (lines.length === 0) return "";
-  return `\n\n### VOICE MODULATION INSTRUCTIONS\n${lines.join("\n")}`;
+  return lines.join(", ");
 }
 
 /**
@@ -672,19 +672,21 @@ export function resolveSpeakingInstructions(params: {
 
   const customInstructions = params.customInstructions?.trim();
   if (customInstructions) {
-    const fullCustom = customInstructions + modPrompt;
+    const fullCustom = [customInstructions, modPrompt].filter(Boolean).join(", ");
     return { full: fullCustom, condensed: fullCustom, styleLabel: "Custom style" };
   }
 
   const preset = findStylePreset(params.styleId);
   if (preset) {
-    const instructions = buildStylePresetInstructions(preset, params.voice.languageCode) + modPrompt;
+    const instructions = [preset.direction, modPrompt].filter(Boolean).join(", ");
     return { full: instructions, condensed: instructions, styleLabel: preset.label };
   }
 
+  const baseStyle = params.voice.description ?? "natural, professional voice acting";
+  const fullStyle = [baseStyle, modPrompt].filter(Boolean).join(", ");
   return {
-    full: buildSpeakingInstructions(params.voice) + modPrompt,
-    condensed: buildCondensedSpeakingInstructions(params.voice) + modPrompt,
+    full: fullStyle,
+    condensed: fullStyle,
   };
 }
 

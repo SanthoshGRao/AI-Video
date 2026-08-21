@@ -53,6 +53,8 @@ export async function POST(request: Request) {
       voice,
       speakingInstructions,
       condensedSpeakingInstructions,
+      pitch,
+      pace,
     });
 
     const mimeType = buffer.toString("ascii", 0, 4) === "RIFF" ? "audio/wav" : "audio/mpeg";

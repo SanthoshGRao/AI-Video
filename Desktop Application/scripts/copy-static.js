@@ -20,17 +20,19 @@ if (!fs.existsSync(distDir)) {
   fs.mkdirSync(distDir, { recursive: true });
 }
 
-// Copy all .html files
-const htmlFiles = fs.readdirSync(srcDir).filter((f) => f.endsWith(".html"));
+// Copy all .html and image files
+const staticFiles = fs.readdirSync(srcDir).filter((f) => 
+  f.endsWith(".html") || f.endsWith(".png") || f.endsWith(".svg") || f.endsWith(".jpg") || f.endsWith(".webp")
+);
 
-for (const file of htmlFiles) {
+for (const file of staticFiles) {
   const src = path.join(srcDir, file);
   const dest = path.join(distDir, file);
   fs.copyFileSync(src, dest);
   console.log(`  Copied ${file} → dist/${file}`);
 }
 
-console.log(`  ${htmlFiles.length} static file(s) copied.`);
+console.log(`  ${staticFiles.length} static file(s) copied.`);
 
 // Baked secrets (optional — absent in a fresh clone, and that's fine: the
 // app falls back to Settings / the AI relay for keys).

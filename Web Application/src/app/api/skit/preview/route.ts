@@ -106,11 +106,14 @@ export async function POST(request: Request) {
         };
       }
 
+      const member = castBySpeaker.get(line.speaker);
       const { buffer } = await synthesizeGoogleSpeechWithMetadata({
         text: line.text,
         voice: resolved.voice,
         speakingInstructions: full,
         condensedSpeakingInstructions: condensed,
+        pitch: member?.pitch,
+        pace: member?.pace,
       });
       const mimeType = buffer.toString("ascii", 0, 4) === "RIFF" ? "audio/wav" : "audio/mpeg";
 
