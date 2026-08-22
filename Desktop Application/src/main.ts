@@ -421,6 +421,7 @@ async function boot(): Promise<void> {
 
   // 4. Database
   let databaseUrl: string;
+  const usingEmbeddedPostgres = !config.databaseUrl?.trim();
 
   if (config.databaseUrl?.trim()) {
     // User supplied their own Postgres
@@ -450,7 +451,7 @@ async function boot(): Promise<void> {
 
   let schemaPushOk = true;
   try {
-    await pushSchema(webAppDir, serverEnv);
+    await pushSchema(webAppDir, serverEnv, { embedded: usingEmbeddedPostgres });
   } catch (err: any) {
     schemaPushOk = false;
     const msg = err?.message || "Unknown error";
@@ -628,14 +629,30 @@ app.on("ready", async () => {
   }
 });
 
-app.on("before-quit", async () => {
+app.on("before-quit", (event) => {
   if (isQuitting) return;
   isQuitting = true;
 
-  console.log("[main] Shutting down…");
-  stopNextServer();
-  await closePool();
-  await stopEmbeddedPostgres();
+  // Electron does not await async `before-quit` listeners — it tears the
+  // process down as soon as the handler returns, so an `async` one only
+  // gets as far as its first await. Shutting Postgres down is asynchronous,
+  // which meant the postmaster was orphaned on essentially every exit (see
+  // stopEmbeddedPostgres for what that orphan then does to the next launch).
+  // Cancel this quit, shut the children down properly, then exit for real —
+  // app.exit() doesn't re-fire this event.
+  event.preventDefault();
+
+  void (async () => {
+    console.log("[main] Shutting down…");
+    try {
+      stopNextServer();
+      await closePool();
+      await stopEmbeddedPostgres();
+    } catch (err: any) {
+      console.warn("[main] Shutdown error:", err?.message || err);
+    }
+    app.exit(0);
+  })();
 });
 
 app.on("window-all-closed", () => {

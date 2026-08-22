@@ -37,6 +37,16 @@ export interface ServerOpts {
   onLog?: (line: string) => void;
 }
 
+export interface SchemaPushOpts {
+  /**
+   * True when `env.DATABASE_URL` points at the Postgres instance this app
+   * started itself. Only then is it safe to clear other sessions — a
+   * user-supplied DATABASE_URL may be a shared server whose other
+   * connections belong to someone else.
+   */
+  embedded?: boolean;
+}
+
 /**
  * Execute the full database schema directly via the `pg` module.
  * This bypasses the prisma CLI entirely — no need for prisma.cmd,
@@ -45,17 +55,24 @@ export interface ServerOpts {
  * statement uses IF NOT EXISTS / DO $$ guards so it's safe to run
  * on every launch (idempotent).
  *
- * Runs in three passes, each isolated from the next:
+ * Runs in ordered passes, each isolated from the next:
  *
- *   1. DDL_SQL — creates enums/tables/indexes/foreign keys.
+ *   1. DDL_TABLES_SQL — creates enums and tables.
  *   2. Derived ALTERs — brings a database created by an OLDER version up
  *      to date. `CREATE TABLE IF NOT EXISTS` is a no-op on an existing
  *      table, so columns and enum values added since that table was first
  *      created would otherwise never appear, and every query touching them
  *      would fail for anyone upgrading rather than installing fresh.
- *   3. SEED_SQL — optional reference rows.
+ *   3. DDL_CONSTRAINTS_SQL — indexes and foreign keys. These run AFTER
+ *      pass 2 on purpose: an index or FK on a column that pass 2 has just
+ *      added can only be created once the column exists. Running them in
+ *      pass 1 would raise `undefined_column` on every upgrading install —
+ *      and because pass 1 is a single implicit transaction, that one error
+ *      would roll the whole schema back.
+ *   4. SEED_SQL — optional reference rows (see seedDatabase).
  *
- * Each pass 2/3 statement is sent on its own so a single failure can't
+ * Statements in passes 2 and 3 are sent one at a time so a single failure
+ * can't
  * take the rest down with it. That isolation is the whole point: pg runs
  * a multi-statement query as one implicit transaction, so when these were
  * concatenated into a single string, one malformed seed row at the very
@@ -63,7 +80,8 @@ export interface ServerOpts {
  */
 export async function pushSchema(
   _webAppDir: string,
-  env: Record<string, string>
+  env: Record<string, string>,
+  opts: SchemaPushOpts = {}
 ): Promise<void> {
   const dbUrl = env.DIRECT_URL || env.DATABASE_URL;
   if (!dbUrl) {
@@ -86,14 +104,37 @@ export async function pushSchema(
   try {
     await client.connect();
 
-    console.log("[server] Syncing database schema via raw SQL…");
-    await client.query(DDL_SQL);
+    if (opts.embedded) {
+      await clearStaleSessions(client);
+    }
 
-    const migrations = [...enumValueAlters(DDL_SQL), ...addColumnAlters(DDL_SQL)];
+    // Fail fast rather than hang. Every statement below takes a lock, and a
+    // conflicting one is held indefinitely by a leftover backend from a run
+    // that didn't shut down cleanly. Without a lock_timeout the boot simply
+    // stops on "Syncing database schema…" with nothing to show the user;
+    // with one, the statement gives up and the error reaches the splash.
+    await client.query("SET lock_timeout = '5s'");
+    await client.query("SET statement_timeout = '300s'");
+
+    // ...but a per-statement timeout alone isn't enough: there are several
+    // hundred statements, so a table that stays locked would still take
+    // hours to grind through at 5s each. One probe up front turns that into
+    // one 5s wait and a message that names the problem.
+    await assertSchemaLockable(client);
+
+    console.log("[server] Syncing database schema via raw SQL…");
+    await client.query(DDL_TABLES_SQL);
+
+    const migrations = [
+      ...enumValueAlters(DDL_TABLES_SQL),
+      ...addColumnAlters(DDL_TABLES_SQL),
+    ];
     const applied = await runIndependently(client, migrations);
     if (applied) {
       console.log(`[server] Applied ${applied} schema migration(s).`);
     }
+
+    await runIndependently(client, splitStatements(DDL_CONSTRAINTS_SQL));
 
     console.log("[server] Database schema synced successfully.");
   } catch (err: any) {
@@ -131,6 +172,7 @@ export async function seedDatabase(
   const client = new Client({ connectionString: dbUrl });
   try {
     await client.connect();
+    await client.query("SET lock_timeout = '15s'").catch(() => {});
     const inserted = await runIndependently(client, SEED_SQL);
     console.log(`[server] Seeded ${inserted}/${SEED_SQL.length} reference table(s).`);
   } finally {
@@ -143,20 +185,144 @@ export async function seedDatabase(
 /* ------------------------------------------------------------------ */
 
 /**
+ * Check that the schema is actually writable before attempting hundreds of
+ * DDL statements against it.
+ *
+ * If something else holds a conflicting lock on a core table, every one of
+ * those statements would wait out the full lock_timeout — hours in total,
+ * with the splash stuck on "Syncing database schema…" the whole time. This
+ * takes the same lock once and gives up after 5s, so the boot fails in
+ * seconds with an error that says what's wrong.
+ *
+ * Skipped on a database that has no tables yet: there's nothing to lock,
+ * and a first run must not be blocked by this.
+ */
+async function assertSchemaLockable(client: any): Promise<void> {
+  const { rows } = await client.query(
+    `SELECT to_regclass('public.users') IS NOT NULL AS present`
+  );
+  if (!rows[0]?.present) return; // fresh database — nothing to conflict with
+
+  try {
+    await client.query("BEGIN");
+    await client.query('LOCK TABLE "users" IN ACCESS EXCLUSIVE MODE');
+  } catch (err: any) {
+    await client.query("ROLLBACK").catch(() => {});
+    if (err?.code === "55P03") {
+      throw new Error(
+        "Database is locked by another process — the schema could not be " +
+          "updated. Close any other copy of Video Studio (or restart your " +
+          "computer to clear a leftover database process) and try again."
+      );
+    }
+    throw err;
+  }
+  await client.query("ROLLBACK");
+}
+
+/**
+ * Terminate any other backend connected to our database.
+ *
+ * At boot nothing legitimate is connected yet — the Next.js server hasn't
+ * been spawned — so any other session on the embedded server is a leftover
+ * from a previous run whose Postgres was orphaned instead of stopped. Those
+ * leftovers matter because one killed mid-DDL stays "idle in transaction"
+ * holding an ACCESS EXCLUSIVE lock, and the postmaster won't notice its
+ * client is gone for as long as the OS keeps the dead TCP connection alive
+ * (hours, on Windows defaults). Everything the app does afterwards — the
+ * schema push, and then every query the UI makes — blocks behind that lock.
+ *
+ * Caller must ensure this is the embedded server; see SchemaPushOpts.
+ */
+async function clearStaleSessions(client: any): Promise<void> {
+  try {
+    const { rows } = await client.query(
+      `SELECT pg_terminate_backend(pid) FROM pg_stat_activity
+        WHERE datname = current_database() AND pid <> pg_backend_pid()`
+    );
+    if (rows.length > 0) {
+      console.log(
+        `[server] Cleared ${rows.length} stale database session(s) left by a previous run.`
+      );
+    }
+  } catch (err: any) {
+    // Not fatal on its own — the lock_timeout below will surface the
+    // consequence with a clearer message if a leftover really is in the way.
+    console.warn("[server] Could not clear stale sessions:", err?.message);
+  }
+}
+
+/**
  * Run each statement in its own round trip, logging but swallowing
  * failures. Returns how many succeeded.
  */
 async function runIndependently(client: any, statements: string[]): Promise<number> {
   let ok = 0;
+  let consecutiveLockTimeouts = 0;
+
   for (const sql of statements) {
     try {
       await client.query(sql);
       ok++;
+      consecutiveLockTimeouts = 0;
     } catch (err: any) {
       console.warn(`[server] Skipped statement (${err?.message}): ${sql.slice(0, 120)}`);
+
+      // 55P03 = lock_not_available. A run of these means something is
+      // holding the table and the remaining statements will each burn the
+      // full lock_timeout for nothing — give the pass up instead.
+      if (err?.code === "55P03") {
+        if (++consecutiveLockTimeouts >= 3) {
+          console.warn(
+            "[server] Abandoning pass — database is locked by another process."
+          );
+          break;
+        }
+      } else {
+        consecutiveLockTimeouts = 0;
+      }
     }
   }
   return ok;
+}
+
+/**
+ * Split a SQL script into individual statements.
+ *
+ * `$$ … $$` dollar-quoted bodies are treated as opaque, so the semicolons
+ * inside a `DO $$ ... END $$` block aren't mistaken for statement
+ * terminators. Whole-line `--` comments are dropped so a failing statement
+ * logs as itself rather than as the comment above it.
+ */
+function splitStatements(sql: string): string[] {
+  const body = sql
+    .split("\n")
+    .filter((line) => !line.trim().startsWith("--"))
+    .join("\n");
+
+  const out: string[] = [];
+  let buf = "";
+  let inDollarQuote = false;
+
+  for (let i = 0; i < body.length; i++) {
+    if (body[i] === "$" && body[i + 1] === "$") {
+      inDollarQuote = !inDollarQuote;
+      buf += "$$";
+      i++;
+      continue;
+    }
+    if (body[i] === ";" && !inDollarQuote) {
+      const stmt = buf.trim();
+      if (stmt) out.push(`${stmt};`);
+      buf = "";
+      continue;
+    }
+    buf += body[i];
+  }
+
+  const tail = buf.trim();
+  if (tail) out.push(tail);
+  return out;
 }
 
 /**
@@ -214,7 +380,7 @@ function addColumnAlters(ddl: string): string[] {
 /*  Full schema DDL (idempotent — safe to run on every launch)         */
 /* ------------------------------------------------------------------ */
 
-const DDL_SQL = `
+const DDL_TABLES_SQL = `
 -- Enums (CREATE TYPE ... IF NOT EXISTS is PG 9.1+ via DO block)
 DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'Plan') THEN CREATE TYPE "Plan" AS ENUM ('FREE', 'PRO', 'ENTERPRISE'); END IF; END $$;
 DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'ChipCategory') THEN CREATE TYPE "ChipCategory" AS ENUM ('TONE', 'AUDIENCE', 'STYLE', 'FEATURE'); END IF; END $$;
@@ -222,6 +388,7 @@ DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'ProjectStatus'
 DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'MediaType') THEN CREATE TYPE "MediaType" AS ENUM ('IMAGE', 'VIDEO', 'DRONE', 'LOGO', 'DOCUMENT'); END IF; END $$;
 DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'ExportStatus') THEN CREATE TYPE "ExportStatus" AS ENUM ('QUEUED', 'PROCESSING', 'RENDERING', 'POST_PROCESSING', 'UPLOADING', 'DONE', 'FAILED'); END IF; END $$;
 DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'SocialPlatform') THEN CREATE TYPE "SocialPlatform" AS ENUM ('INSTAGRAM', 'FACEBOOK', 'WHATSAPP', 'YOUTUBE', 'TELEGRAM'); END IF; END $$;
+DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'WorkspaceRole') THEN CREATE TYPE "WorkspaceRole" AS ENUM ('OWNER', 'ADMIN', 'MEMBER', 'VIEWER'); END IF; END $$;
 
 -- Tables
 CREATE TABLE IF NOT EXISTS "users" (
@@ -229,6 +396,8 @@ CREATE TABLE IF NOT EXISTS "users" (
     "clerkId" TEXT,
     "googleId" TEXT,
     "email" TEXT NOT NULL,
+    "passwordHash" TEXT,
+    "licenseKey" TEXT,
     "name" TEXT,
     "avatarUrl" TEXT,
     "plan" "Plan" NOT NULL DEFAULT 'FREE',
@@ -295,6 +464,7 @@ CREATE TABLE IF NOT EXISTS "prompt_chips" (
 CREATE TABLE IF NOT EXISTS "projects" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
+    "workspaceId" TEXT,
     "templateId" TEXT,
     "title" TEXT NOT NULL,
     "status" "ProjectStatus" NOT NULL DEFAULT 'DRAFT',
@@ -560,10 +730,50 @@ CREATE TABLE IF NOT EXISTS "connected_social_accounts" (
     CONSTRAINT "connected_social_accounts_pkey" PRIMARY KEY ("id")
 );
 
+CREATE TABLE IF NOT EXISTS "workspaces" (
+    "id" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "workspaceKey" TEXT NOT NULL,
+    "ownerId" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "workspaces_pkey" PRIMARY KEY ("id")
+);
+
+CREATE TABLE IF NOT EXISTS "workspace_members" (
+    "id" TEXT NOT NULL,
+    "workspaceId" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "role" "WorkspaceRole" NOT NULL DEFAULT 'MEMBER',
+    "joinedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "workspace_members_pkey" PRIMARY KEY ("id")
+);
+
+-- Prisma migrations metadata table (so Prisma Client doesn't complain)
+CREATE TABLE IF NOT EXISTS "_prisma_migrations" (
+    "id" VARCHAR(36) NOT NULL,
+    "checksum" VARCHAR(64) NOT NULL,
+    "finished_at" TIMESTAMPTZ,
+    "migration_name" VARCHAR(255) NOT NULL,
+    "logs" TEXT,
+    "rolled_back_at" TIMESTAMPTZ,
+    "started_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
+    "applied_steps_count" INTEGER NOT NULL DEFAULT 0,
+    CONSTRAINT "_prisma_migrations_pkey" PRIMARY KEY ("id")
+);
+`;
+
+/* ------------------------------------------------------------------ */
+/*  Indexes + foreign keys (applied after the ADD COLUMN pass, so a    */
+/*  constraint on a newly-added column can actually be created)        */
+/* ------------------------------------------------------------------ */
+
+const DDL_CONSTRAINTS_SQL = `
 -- Unique indexes
 CREATE UNIQUE INDEX IF NOT EXISTS "users_clerkId_key" ON "users"("clerkId");
 CREATE UNIQUE INDEX IF NOT EXISTS "users_googleId_key" ON "users"("googleId");
 CREATE UNIQUE INDEX IF NOT EXISTS "users_email_key" ON "users"("email");
+CREATE UNIQUE INDEX IF NOT EXISTS "users_licenseKey_key" ON "users"("licenseKey");
 CREATE UNIQUE INDEX IF NOT EXISTS "brand_kits_userId_key" ON "brand_kits"("userId");
 CREATE UNIQUE INDEX IF NOT EXISTS "property_templates_slug_key" ON "property_templates"("slug");
 CREATE UNIQUE INDEX IF NOT EXISTS "render_jobs_exportJobId_key" ON "render_jobs"("exportJobId");
@@ -573,9 +783,12 @@ CREATE UNIQUE INDEX IF NOT EXISTS "voice_style_presets_userId_name_key" ON "voic
 CREATE UNIQUE INDEX IF NOT EXISTS "character_bundles_userId_name_key" ON "character_bundles"("userId", "name");
 CREATE UNIQUE INDEX IF NOT EXISTS "tts_preview_samples_cacheKey_key" ON "tts_preview_samples"("cacheKey");
 CREATE UNIQUE INDEX IF NOT EXISTS "connected_social_accounts_userId_platform_key" ON "connected_social_accounts"("userId", "platform");
+CREATE UNIQUE INDEX IF NOT EXISTS "workspaces_workspaceKey_key" ON "workspaces"("workspaceKey");
+CREATE UNIQUE INDEX IF NOT EXISTS "workspace_members_workspaceId_userId_key" ON "workspace_members"("workspaceId", "userId");
 
 -- Non-unique indexes
 CREATE INDEX IF NOT EXISTS "projects_userId_idx" ON "projects"("userId");
+CREATE INDEX IF NOT EXISTS "projects_workspaceId_idx" ON "projects"("workspaceId");
 CREATE INDEX IF NOT EXISTS "projects_status_idx" ON "projects"("status");
 CREATE INDEX IF NOT EXISTS "script_versions_projectId_idx" ON "script_versions"("projectId");
 CREATE INDEX IF NOT EXISTS "script_versions_projectId_generationBatch_idx" ON "script_versions"("projectId", "generationBatch");
@@ -602,6 +815,9 @@ CREATE INDEX IF NOT EXISTS "font_usage_userId_count_idx" ON "font_usage"("userId
 CREATE INDEX IF NOT EXISTS "voice_style_presets_userId_idx" ON "voice_style_presets"("userId");
 CREATE INDEX IF NOT EXISTS "character_bundles_userId_idx" ON "character_bundles"("userId");
 CREATE INDEX IF NOT EXISTS "connected_social_accounts_userId_idx" ON "connected_social_accounts"("userId");
+CREATE INDEX IF NOT EXISTS "workspaces_ownerId_idx" ON "workspaces"("ownerId");
+CREATE INDEX IF NOT EXISTS "workspace_members_userId_idx" ON "workspace_members"("userId");
+CREATE INDEX IF NOT EXISTS "workspace_members_workspaceId_idx" ON "workspace_members"("workspaceId");
 
 -- Foreign keys (use DO blocks to skip if already exists)
 DO $$ BEGIN ALTER TABLE "brand_kits" ADD CONSTRAINT "brand_kits_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
@@ -630,19 +846,10 @@ DO $$ BEGIN ALTER TABLE "font_usage" ADD CONSTRAINT "font_usage_userId_fkey" FOR
 DO $$ BEGIN ALTER TABLE "voice_style_presets" ADD CONSTRAINT "voice_style_presets_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 DO $$ BEGIN ALTER TABLE "character_bundles" ADD CONSTRAINT "character_bundles_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 DO $$ BEGIN ALTER TABLE "connected_social_accounts" ADD CONSTRAINT "connected_social_accounts_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
-
--- Prisma migrations metadata table (so Prisma Client doesn't complain)
-CREATE TABLE IF NOT EXISTS "_prisma_migrations" (
-    "id" VARCHAR(36) NOT NULL,
-    "checksum" VARCHAR(64) NOT NULL,
-    "finished_at" TIMESTAMPTZ,
-    "migration_name" VARCHAR(255) NOT NULL,
-    "logs" TEXT,
-    "rolled_back_at" TIMESTAMPTZ,
-    "started_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
-    "applied_steps_count" INTEGER NOT NULL DEFAULT 0,
-    CONSTRAINT "_prisma_migrations_pkey" PRIMARY KEY ("id")
-);
+DO $$ BEGIN ALTER TABLE "workspaces" ADD CONSTRAINT "workspaces_ownerId_fkey" FOREIGN KEY ("ownerId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN ALTER TABLE "workspace_members" ADD CONSTRAINT "workspace_members_workspaceId_fkey" FOREIGN KEY ("workspaceId") REFERENCES "workspaces"("id") ON DELETE CASCADE ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN ALTER TABLE "workspace_members" ADD CONSTRAINT "workspace_members_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN ALTER TABLE "projects" ADD CONSTRAINT "projects_workspaceId_fkey" FOREIGN KEY ("workspaceId") REFERENCES "workspaces"("id") ON DELETE SET NULL ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 `;
 
 /* ------------------------------------------------------------------ */

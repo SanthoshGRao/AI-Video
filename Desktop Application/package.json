@@ -1,13 +1,14 @@
 {
   "name": "video-studio-desktop",
-  "version": "1.1.6",
+  "version": "1.1.7",
   "description": "Video Studio — Desktop Edition",
   "private": true,
   "main": "dist/main.js",
   "scripts": {
     "compile": "tsc",
     "copy-static": "node scripts/copy-static.js",
-    "build": "npm run compile && npm run copy-static",
+    "check-schema": "node scripts/check-schema-drift.js",
+    "build": "npm run check-schema && npm run compile && npm run copy-static",
     "dev": "node scripts/dev.js",
     "dev:fast": "node scripts/dev.js --skip-web",
     "dev:clean": "node scripts/dev.js --force-web",

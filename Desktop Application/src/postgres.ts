@@ -101,17 +101,41 @@ export async function startEmbeddedPostgres(): Promise<string> {
 /**
  * Gracefully stop the embedded Postgres server.
  * Safe to call even if Postgres was never started.
+ *
+ * This *waits* for the shutdown to finish. It used to call `stop()` and
+ * return immediately without awaiting it, so the Electron process exited
+ * while pg_ctl was still working — Windows then tore down that child and
+ * left the postmaster orphaned. The orphan kept the data directory locked
+ * *and* kept the previous run's backends alive, including any that were
+ * mid-transaction and holding an ACCESS EXCLUSIVE lock from a DDL
+ * statement. On the next launch every query against those tables blocked
+ * on that lock, which is what turned into a "Syncing database schema…"
+ * splash that never advanced and a UI where nothing finished loading.
+ *
+ * Capped so a wedged server can't hang the quit indefinitely — if the
+ * shutdown overruns, exiting anyway is no worse than the old behaviour.
  */
-export async function stopEmbeddedPostgres(): Promise<void> {
+export async function stopEmbeddedPostgres(timeoutMs = 15_000): Promise<void> {
   if (!instance) return;
   const current = instance;
   instance = null;
+
+  let timer: NodeJS.Timeout | undefined;
   try {
-    const res = current.stop();
-    if (res && typeof res.catch === "function") {
-      res.catch(() => {});
-    }
+    await Promise.race([
+      Promise.resolve(current.stop()),
+      new Promise<void>((resolve) => {
+        timer = setTimeout(() => {
+          console.warn(
+            `[postgres] Shutdown still running after ${timeoutMs}ms — exiting anyway.`
+          );
+          resolve();
+        }, timeoutMs);
+      }),
+    ]);
   } catch {
     // Suppress non-fatal embedded-postgres cleanup error
+  } finally {
+    if (timer) clearTimeout(timer);
   }
 }
