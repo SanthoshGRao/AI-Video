@@ -116,11 +116,9 @@ export async function pushSchema(
     await client.query("SET lock_timeout = '5s'");
     await client.query("SET statement_timeout = '300s'");
 
-    // ...but a per-statement timeout alone isn't enough: there are several
-    // hundred statements, so a table that stays locked would still take
-    // hours to grind through at 5s each. One probe up front turns that into
-    // one 5s wait and a message that names the problem.
-    await assertSchemaLockable(client);
+    // ...and a probe up front so a contended table is named in the log
+    // rather than only showing up as hundreds of skipped statements.
+    await probeSchemaLock(client);
 
     console.log("[server] Syncing database schema via raw SQL…");
     await client.query(DDL_TABLES_SQL);
@@ -185,19 +183,23 @@ export async function seedDatabase(
 /* ------------------------------------------------------------------ */
 
 /**
- * Check that the schema is actually writable before attempting hundreds of
- * DDL statements against it.
+ * Probe whether a core table can be locked, to decide how much to expect
+ * from the DDL that follows.
  *
- * If something else holds a conflicting lock on a core table, every one of
- * those statements would wait out the full lock_timeout — hours in total,
- * with the splash stuck on "Syncing database schema…" the whole time. This
- * takes the same lock once and gives up after 5s, so the boot fails in
- * seconds with an error that says what's wrong.
+ * Advisory, not a gate. If something holds a conflicting lock, each of the
+ * several hundred statements below would wait out the full lock_timeout,
+ * so it's worth knowing up front — but a failed probe must NOT abort the
+ * push. On a shared database (a team pointing several installs at one
+ * Postgres via Settings) another client can easily hold a lock for the
+ * moment this runs, and treating that as fatal would mean the schema never
+ * gets updated at all. The statements are individually guarded and the
+ * lock-timeout backstop in runIndependently bounds the cost of trying, so
+ * the right move is to warn and carry on.
  *
  * Skipped on a database that has no tables yet: there's nothing to lock,
- * and a first run must not be blocked by this.
+ * and a first run must not be delayed by this.
  */
-async function assertSchemaLockable(client: any): Promise<void> {
+async function probeSchemaLock(client: any): Promise<void> {
   const { rows } = await client.query(
     `SELECT to_regclass('public.users') IS NOT NULL AS present`
   );
@@ -206,18 +208,18 @@ async function assertSchemaLockable(client: any): Promise<void> {
   try {
     await client.query("BEGIN");
     await client.query('LOCK TABLE "users" IN ACCESS EXCLUSIVE MODE');
+    await client.query("ROLLBACK");
   } catch (err: any) {
     await client.query("ROLLBACK").catch(() => {});
     if (err?.code === "55P03") {
-      throw new Error(
-        "Database is locked by another process — the schema could not be " +
-          "updated. Close any other copy of Video Studio (or restart your " +
-          "computer to clear a leftover database process) and try again."
+      console.warn(
+        "[server] Another session is holding a lock on \"users\" — schema " +
+          "changes may be skipped this launch and retried on the next one."
       );
+      return;
     }
-    throw err;
+    console.warn("[server] Lock probe failed:", err?.message);
   }
-  await client.query("ROLLBACK");
 }
 
 /**
@@ -258,32 +260,39 @@ async function clearStaleSessions(client: any): Promise<void> {
  */
 async function runIndependently(client: any, statements: string[]): Promise<number> {
   let ok = 0;
-  let consecutiveLockTimeouts = 0;
+  // Tables a statement has already timed out on. Every later statement
+  // against the same table would wait out the full lock_timeout for nothing,
+  // so they're skipped outright — but statements against *other* tables
+  // still run. Giving up on the whole pass instead would mean one busy table
+  // (and "users" is read by every request) could stop the schema ever
+  // catching up on a shared server.
+  const lockedOut = new Set<string>();
 
   for (const sql of statements) {
+    const table = statementTable(sql);
+    if (table && lockedOut.has(table)) continue;
+
     try {
       await client.query(sql);
       ok++;
-      consecutiveLockTimeouts = 0;
     } catch (err: any) {
       console.warn(`[server] Skipped statement (${err?.message}): ${sql.slice(0, 120)}`);
-
-      // 55P03 = lock_not_available. A run of these means something is
-      // holding the table and the remaining statements will each burn the
-      // full lock_timeout for nothing — give the pass up instead.
-      if (err?.code === "55P03") {
-        if (++consecutiveLockTimeouts >= 3) {
-          console.warn(
-            "[server] Abandoning pass — database is locked by another process."
-          );
-          break;
-        }
-      } else {
-        consecutiveLockTimeouts = 0;
+      // 55P03 = lock_not_available.
+      if (err?.code === "55P03" && table) {
+        lockedOut.add(table);
+        console.warn(
+          `[server] "${table}" is locked — skipping its remaining statements this launch.`
+        );
       }
     }
   }
   return ok;
+}
+
+/** The table a DDL statement acts on, for lock bookkeeping. */
+function statementTable(sql: string): string | null {
+  const m = sql.match(/ALTER TABLE "(\w+)"|ON "(\w+)"/);
+  return m ? m[1] || m[2] : null;
 }
 
 /**
