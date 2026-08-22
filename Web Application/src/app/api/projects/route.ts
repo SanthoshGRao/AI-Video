@@ -5,18 +5,26 @@ import { handleRouteError } from "@/lib/api/errors";
 import { createProjectSchema } from "@/lib/validations/project";
 import { ttsToProjectLanguage } from "@/lib/skit/project";
 import { DEFAULT_PROPERTY_TEMPLATES } from "@/lib/templates/defaults";
+import { resolveTargetWorkspaceId, scopedProjectWhere } from "@/lib/workspace/access";
 
-export async function GET() {
+export async function GET(request: Request) {
   const user = await getOrCreateDbUser();
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  // `?workspaceId=` picks the sidebar scope: a workspace id shows that team's
+  // projects, "personal" (or absent) shows the user's own unfiled ones.
+  const scopeId = new URL(request.url).searchParams.get("workspaceId");
+
   const projects = await prisma.project.findMany({
-    where: { userId: user.id },
+    where: await scopedProjectWhere(user.id, scopeId),
     orderBy: { updatedAt: "desc" },
     include: {
       template: { select: { slug: true, name: true, icon: true } },
+      // Whose work this is — the card shows a creator chip in shared workspaces
+      // so a team can tell at a glance who made what.
+      user: { select: { id: true, name: true, email: true, avatarUrl: true } },
       // Card art candidates. Audio rows (DOCUMENT) can never supply a preview,
       // and the oldest asset is often exactly that — so filter to visual types
       // and float the ones that actually have a thumbnail to the front.
@@ -88,6 +96,14 @@ export async function POST(request: Request) {
   const data = parsed.data;
   const kind = data.kind ?? "standard";
 
+  // New projects land in whichever workspace the sidebar has selected. An
+  // unknown id, or one the user isn't a member of, degrades to personal rather
+  // than failing the create.
+  const workspaceId = await resolveTargetWorkspaceId(
+    user.id,
+    (body as { workspaceId?: string }).workspaceId
+  );
+
   // ---- Skit / conversation projects -------------------------------------
   // No property template or fact extraction — the whole workflow (script,
   // cast, preview) lives in `propertyData.skit` so it needs no schema change.
@@ -106,6 +122,7 @@ export async function POST(request: Request) {
       project = await prisma.project.create({
         data: {
           userId: user.id,
+          workspaceId,
           templateId: generic?.id ?? null,
           title: data.title,
           propertyData: {
@@ -185,6 +202,7 @@ export async function POST(request: Request) {
     project = await prisma.project.create({
       data: {
         userId: user.id,
+        workspaceId,
         templateId: template.id,
         title: data.title,
         propertyData: {

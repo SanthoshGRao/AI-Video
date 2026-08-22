@@ -29,7 +29,6 @@ export async function POST(request: Request) {
 
     const passwordHash = await bcrypt.hash(password, 10);
     const licenseKey = generateKey("VS");
-    const workspaceKey = generateKey("WS");
 
     const user = await prisma.user.create({
       data: {
@@ -40,32 +39,14 @@ export async function POST(request: Request) {
       },
     });
 
-    // Create default personal workspace
-    const workspace = await prisma.workspace.create({
-      data: {
-        name: `${user.name}'s Workspace`,
-        workspaceKey,
-        ownerId: user.id,
-        members: {
-          create: {
-            userId: user.id,
-            role: "OWNER",
-          },
-        },
-      },
-    });
-
+    // No default workspace — new accounts start on Personal and create or
+    // join a team explicitly from the workspace switcher.
     return NextResponse.json({
       user: {
         id: user.id,
         email: user.email,
         name: user.name,
         licenseKey: user.licenseKey,
-      },
-      workspace: {
-        id: workspace.id,
-        name: workspace.name,
-        workspaceKey: workspace.workspaceKey,
       },
     }, { status: 201 });
   } catch (error) {

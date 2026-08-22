@@ -613,6 +613,12 @@ if (!gotLock) {
   });
 }
 
+app.on("web-contents-created", (_event, contents) => {
+  contents.on("did-fail-load", (_event, errorCode, errorDescription, validatedURL) => {
+    console.error(`[main] WebContents failed to load: ${validatedURL} (${errorCode}: ${errorDescription})`);
+  });
+});
+
 app.on("ready", async () => {
   registerIpc();
   registerEditorIpc();
@@ -656,6 +662,7 @@ app.on("before-quit", (event) => {
 });
 
 app.on("window-all-closed", () => {
+  console.log("[main] All windows closed — quitting app.");
   app.quit();
 });
 

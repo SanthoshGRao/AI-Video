@@ -12,12 +12,19 @@ import {
   Archive,
   Sparkles,
   AlertTriangle,
+  Download,
+  FolderInput,
+  Check,
+  Users,
 } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -28,16 +35,23 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useUIStore } from "@/stores/ui-store";
+import { useActiveWorkspace } from "@/lib/workspace/workspace-store";
 
 interface ProjectActionsMenuProps {
   projectId: string;
   projectTitle: string;
+  /** Workspace the project currently sits in; null/undefined means Personal. */
+  workspaceId?: string | null;
+  /** False when a teammate created it — moving stays with the creator. */
+  canMove?: boolean;
   onDeleted?: () => void;
 }
 
 export function ProjectActionsMenu({
   projectId,
   projectTitle,
+  workspaceId,
+  canMove = true,
   onDeleted,
 }: ProjectActionsMenuProps) {
   const router = useRouter();
@@ -46,9 +60,49 @@ export function ProjectActionsMenu({
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [busy, setBusy] = useState(false);
 
+  const { joinedWorkspaces } = useActiveWorkspace();
+
   const invalidate = () => {
     queryClient.invalidateQueries({ queryKey: ["projects"] });
     queryClient.invalidateQueries({ queryKey: ["dashboard-stats"] });
+  };
+
+  /**
+   * Hand the bundle to the browser as a normal navigation rather than fetching
+   * it. A project bundle can run to gigabytes, and fetch()-then-blob() would
+   * hold all of it in memory before the save dialog ever appears; letting the
+   * browser stream the download keeps memory flat and gives a real progress bar.
+   */
+  const exportBundle = () => {
+    addToast({
+      type: "info",
+      title: "Preparing export",
+      description: "Bundling media — the download starts on its own.",
+    });
+    window.location.href = `/api/projects/${projectId}/export-bundle`;
+  };
+
+  const moveTo = async (targetId: string | null) => {
+    setBusy(true);
+    try {
+      const res = await fetch(`/api/projects/${projectId}/move`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ workspaceId: targetId }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Move failed");
+      addToast({ type: "success", title: data.message ?? "Project moved" });
+      invalidate();
+    } catch (e) {
+      addToast({
+        type: "error",
+        title: "Could not move project",
+        description: e instanceof Error ? e.message : undefined,
+      });
+    } finally {
+      setBusy(false);
+    }
   };
 
   const duplicate = async () => {
@@ -150,6 +204,46 @@ export function ProjectActionsMenu({
             <Pencil className="w-4 h-4" />
             Edit settings
           </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onSelect={exportBundle} disabled={busy}>
+            <Download className="w-4 h-4" />
+            Export project
+          </DropdownMenuItem>
+          {canMove && (
+            <DropdownMenuSub>
+              <DropdownMenuSubTrigger>
+                <FolderInput className="w-4 h-4" />
+                Move to
+              </DropdownMenuSubTrigger>
+              <DropdownMenuSubContent>
+                <DropdownMenuItem
+                  onSelect={() => moveTo(null)}
+                  disabled={busy || !workspaceId}
+                >
+                  <Users className="w-4 h-4" />
+                  Personal
+                  {!workspaceId && <Check className="w-3.5 h-3.5 ml-auto" />}
+                </DropdownMenuItem>
+                {joinedWorkspaces.map((ws) => (
+                  <DropdownMenuItem
+                    key={ws.id}
+                    onSelect={() => moveTo(ws.id)}
+                    disabled={busy || workspaceId === ws.id}
+                  >
+                    <span className="truncate">{ws.name}</span>
+                    {workspaceId === ws.id && (
+                      <Check className="w-3.5 h-3.5 ml-auto" />
+                    )}
+                  </DropdownMenuItem>
+                ))}
+                {joinedWorkspaces.length === 0 && (
+                  <div className="px-2 py-1.5 text-xs text-[var(--text-tertiary)]">
+                    No teams yet
+                  </div>
+                )}
+              </DropdownMenuSubContent>
+            </DropdownMenuSub>
+          )}
           <DropdownMenuSeparator />
           <DropdownMenuItem onSelect={archive} disabled={busy}>
             <Archive className="w-4 h-4" />

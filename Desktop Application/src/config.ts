@@ -252,6 +252,15 @@ export function storagePath(): string {
 const REVOKED_KEY_HASHES = new Set([
   // Gemini key baked into builds up to 1.1.3
   "b01f86bcbbb96ce7374375ce1b2a6906b9a92c75936cf45e3609040c8fb5634d",
+  // OpenAI key baked into builds up to 1.1.7 — same failure mode: saved
+  // config.json values win over .env.local/secrets.json defaults, so
+  // once this key was rotated every install with a saved config stayed
+  // pinned to the dead one.
+  "47f51a1bb011bb2d80670c0e006f2dd72d7532edbe7eb608831dffa86eb20c60",
+  // Gemini key baked into builds up to 1.1.7 (the replacement for the
+  // 1.1.3 key above — also scraped and revoked after landing in
+  // gemini-relay.ts as a hardcoded fallback; see that file's history).
+  "06f5d1abaac254b93847f3fb402b8ce118d5554d23078b73ce09de06481261be",
 ]);
 
 function isRevoked(key: string | undefined): boolean {

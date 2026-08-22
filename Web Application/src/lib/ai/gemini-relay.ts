@@ -8,14 +8,9 @@
  */
 
 const GEMINI_API_BASE = "https://generativelanguage.googleapis.com";
-const DEFAULT_GEMINI_KEY = "AIzaSyCTnCvDmiWQB99KY7WOnf6WtWm-WYuhfN4";
 
 function directKey(): string | undefined {
-  const envKey = process.env.GOOGLE_AI_API_KEY?.trim() || process.env.GOOGLE_CLOUD_API_KEY?.trim();
-  if (envKey && envKey !== "AIzaSyDWScRYnUcENcSz-LDv9aUT5NbrM2ni3V0") {
-    return envKey;
-  }
-  return DEFAULT_GEMINI_KEY;
+  return process.env.GOOGLE_AI_API_KEY?.trim() || process.env.GOOGLE_CLOUD_API_KEY?.trim() || undefined;
 }
 
 function relayConfig(): { url: string; token: string } | undefined {

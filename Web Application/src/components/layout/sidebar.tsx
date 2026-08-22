@@ -17,10 +17,6 @@ import {
   BarChart3,
   User,
   LogOut,
-  Users,
-  UserPlus,
-  Check,
-  Plus,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -30,8 +26,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { InviteTeammatesModal } from "@/components/workspace/invite-modal";
-import { useActiveWorkspace, WORKSPACE_COLORS } from "@/lib/workspace/workspace-store";
+import { WorkspaceStack } from "@/components/workspace/workspace-switcher";
 
 const navItems = [
   {
@@ -76,88 +71,6 @@ function useMe() {
   }, []);
 
   return me;
-}
-
-/** Stacked Workspace Avatar List (near user icon in left side panel) */
-function SidebarWorkspaceStack({ expanded }: { expanded: boolean }) {
-  const { workspaces, activeWsId, switchWorkspace } = useActiveWorkspace();
-  const [inviteModalOpen, setInviteModalOpen] = useState(false);
-
-  if (!workspaces || workspaces.length === 0) return null;
-
-  const activeWs = workspaces.find((w) => w.id === activeWsId) || workspaces[0];
-
-  return (
-    <div className="space-y-1.5 border-t border-[var(--border-subtle)] pt-3 px-3">
-      {expanded && (
-        <div className="flex items-center justify-between px-1 mb-1">
-          <span className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">
-            Workspaces
-          </span>
-        </div>
-      )}
-
-      {/* Stacked Workspace Avatars with First Letter Icon */}
-      <div className="flex flex-col space-y-1.5">
-        {workspaces.map((ws, index) => {
-          const firstLetter = (ws.name || "W")[0].toUpperCase();
-          const isActive = ws.id === activeWs?.id;
-          const colorClass = WORKSPACE_COLORS[index % WORKSPACE_COLORS.length];
-
-          return (
-            <button
-              key={ws.id}
-              onClick={() => switchWorkspace(ws.id)}
-              className={cn(
-                "w-full flex items-center gap-2.5 p-1.5 rounded-xl transition-all duration-200 text-left group",
-                isActive
-                  ? "bg-zinc-100 dark:bg-zinc-800/80 shadow-sm"
-                  : "hover:bg-zinc-100/60 dark:hover:bg-zinc-900/60",
-                !expanded && "justify-center px-0 bg-transparent"
-              )}
-              title={`${ws.name} (${ws.members?.length || 1} members)`}
-            >
-              {/* Circular Avatar Icon with First Letter */}
-              <div
-                className={cn(
-                  "w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs shrink-0 shadow-sm transition-all duration-200 group-hover:scale-105",
-                  colorClass,
-                  isActive && "ring-2 ring-emerald-500 ring-offset-2 ring-offset-white dark:ring-offset-zinc-950 scale-105"
-                )}
-              >
-                {firstLetter}
-              </div>
-
-              {expanded && (
-                <div className="flex-1 min-w-0 flex items-center justify-between">
-                  <div className="flex flex-col min-w-0">
-                    <span
-                      className={cn(
-                        "text-xs font-semibold truncate",
-                        isActive ? "text-emerald-700 dark:text-emerald-400 font-bold" : "text-zinc-800 dark:text-zinc-200"
-                      )}
-                    >
-                      {ws.name}
-                    </span>
-                    <span className="text-[10px] text-zinc-400 truncate">
-                      {ws.members?.length || 1} member(s)
-                    </span>
-                  </div>
-                  {isActive && <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0 ml-1" />}
-                </div>
-              )}
-            </button>
-          );
-        })}
-      </div>
-
-      <InviteTeammatesModal
-        open={inviteModalOpen}
-        onOpenChange={setInviteModalOpen}
-        workspace={activeWs}
-      />
-    </div>
-  );
 }
 
 function ClerkSignOutItem() {
@@ -339,8 +252,11 @@ export function Sidebar() {
         })}
       </nav>
 
+      {/* Workspace switcher — Personal plus every joined team */}
+      <WorkspaceStack expanded={expanded} />
+
       {/* Bottom User Section */}
-      <div className="border-t border-[var(--border-subtle)] p-3 space-y-1">
+      <div className="border-t border-[var(--border-subtle)] p-3 space-y-1 mt-3">
         <SidebarUserMenu collapsed={!expanded} onOpenChange={setMenuOpen} />
 
         {/* Settings Link */}

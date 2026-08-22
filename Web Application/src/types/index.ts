@@ -72,6 +72,8 @@ export type ProjectStatus =
 export interface Project {
   id: string;
   userId: string;
+  /** Workspace the project is filed under; null means the creator's Personal. */
+  workspaceId: string | null;
   templateId: string | null;
   title: string;
   status: ProjectStatus;

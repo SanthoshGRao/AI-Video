@@ -269,7 +269,22 @@ function textKindOf(clip: NativeClip): "subtitle" | "title" {
   return clip.kind === "subtitle" || clip.cueId ? "subtitle" : "title";
 }
 
-/** Per-word timings, for karaoke/highlight/word_pop animations. */
+/**
+ * Per-word timings, for karaoke/highlight/word_pop animations.
+ *
+ * `RenderWireText.timeMs` (below) is the playhead relative to the clip's OWN
+ * start, so word timings must be in that same clip-relative basis to line up
+ * — but the editor doesn't consistently save them that way: editor-v2 writes
+ * `cue.words` straight through (absolute timeline ms, see
+ * `Web Application/src/lib/editor-v2/timeline-sync.ts`), while the older
+ * OpenCut subtitle builder already makes them cue-relative. Left unconverted,
+ * only a clip starting at (or near) t=0 in the timeline would ever get a
+ * timeMs/word match — every later subtitle cue's words compare against a
+ * timeMs that never reaches their (much larger) absolute startMs, so
+ * highlighting silently stops after the first cue. Detect which basis this
+ * clip's words are actually in (by checking whether the first word lines up
+ * with the clip's absolute start) and normalize to clip-relative.
+ */
 function wordsOf(clip: NativeClip): Array<{ word: string; startMs: number; endMs: number }> | undefined {
   const raw = clip.raw?.words;
   if (!Array.isArray(raw)) return undefined;
@@ -281,7 +296,18 @@ function wordsOf(clip: NativeClip): Array<{ word: string; startMs: number; endMs
       endMs: Number(w.endMs ?? 0),
     }))
     .filter((w) => w.word);
-  return words.length > 0 ? words : undefined;
+  if (words.length === 0) return undefined;
+
+  const clipStartMs = clip.startSec * 1000;
+  const firstStart = words[0].startMs;
+  const looksAbsolute = Math.abs(firstStart - clipStartMs) < Math.abs(firstStart);
+  const offset = looksAbsolute ? clipStartMs : 0;
+
+  return words.map((w) => ({
+    word: w.word,
+    startMs: w.startMs - offset,
+    endMs: w.endMs - offset,
+  }));
 }
 
 interface ActiveExport {

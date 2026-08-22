@@ -18,6 +18,9 @@ export const createProjectSchema = z
     // Skit-only: the initial script text and its TTS language code (e.g. "kn-IN").
     skitScript: z.string().max(20000).optional(),
     skitLanguage: z.string().max(12).optional(),
+    // Workspace the project should belong to. "personal" or omitted keeps it
+    // private; the route verifies membership before honouring a workspace id.
+    workspaceId: z.string().max(64).nullable().optional(),
   })
   .superRefine((val, ctx) => {
     if ((val.kind ?? "standard") === "standard") {

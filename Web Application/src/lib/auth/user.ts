@@ -108,26 +108,6 @@ export async function getOrCreateDbUser(): Promise<User | null> {
         },
       });
 
-      // Auto-create personal workspace for new user
-      try {
-        const wsKey = generateKey("WS");
-        await prisma.workspace.create({
-          data: {
-            name: `${newUser.name || 'Personal'}'s Workspace`,
-            workspaceKey: wsKey,
-            ownerId: newUser.id,
-            members: {
-              create: {
-                userId: newUser.id,
-                role: "OWNER",
-              },
-            },
-          },
-        });
-      } catch (wsErr) {
-        console.warn("[getOrCreateDbUser] Workspace creation skipped:", wsErr);
-      }
-
       return newUser;
     } catch (err) {
       console.error("[getOrCreateDbUser] Error resolving user:", err);

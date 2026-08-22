@@ -6,12 +6,14 @@ import { requireProjectAccess } from "@/lib/auth/require-project";
 import { handleRouteError } from "@/lib/api/errors";
 import { updateProjectSchema } from "@/lib/validations/project";
 import { serializeProjectWithAssets } from "@/lib/storage/serialize-project";
+import { accessibleProjectWhere } from "@/lib/workspace/access";
 
 type RouteContext = { params: Promise<{ id: string }> };
 
-async function getOwnedProject(projectId: string, userId: string) {
+/** Same access rule as requireProjectAccess: creator, or a member of the project's workspace. */
+async function getAccessibleProject(projectId: string, userId: string) {
   return prisma.project.findFirst({
-    where: { id: projectId, userId },
+    where: { id: projectId, ...(await accessibleProjectWhere(userId)) },
     include: {
       template: true,
       scriptVersions: {
@@ -40,7 +42,7 @@ export async function GET(_request: Request, context: RouteContext) {
   try {
     const { id } = await context.params;
     const { user } = await requireProjectAccess(id);
-    const project = await getOwnedProject(id, user.id);
+    const project = await getAccessibleProject(id, user.id);
 
     if (!project) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });

@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
+import crypto from "crypto";
 import prisma from "@/lib/db/prisma";
 import { getOrCreateDbUser } from "@/lib/auth/user";
-import crypto from "crypto";
+import { handleRouteError } from "@/lib/api/errors";
 
-function generateKey(prefix: string): string {
+/** Join key shape: WS-A1B2-C3D4 — short enough to read aloud, wide enough (32 bits) not to be guessed. */
+function generateWorkspaceKey(): string {
   const bytes = crypto.randomBytes(4).toString("hex").toUpperCase();
-  const part1 = bytes.slice(0, 4);
-  const part2 = bytes.slice(4, 8);
-  return `${prefix}-${part1}-${part2}-2026`;
+  return `WS-${bytes.slice(0, 4)}-${bytes.slice(4, 8)}`;
 }
 
 export async function GET() {
@@ -22,33 +22,35 @@ export async function GET() {
       workspace: {
         include: {
           members: {
+            orderBy: { joinedAt: "asc" },
             include: {
               user: {
                 select: { id: true, name: true, email: true, avatarUrl: true },
               },
             },
           },
-          _count: {
-            select: { projects: true },
-          },
+          _count: { select: { projects: true } },
         },
       },
     },
-    orderBy: { joinedAt: "desc" },
+    orderBy: { joinedAt: "asc" },
   });
 
   const workspaces = memberships.map((m) => ({
     id: m.workspace.id,
     name: m.workspace.name,
     workspaceKey: m.workspace.workspaceKey,
-    role: m.role,
+    ownerId: m.workspace.ownerId,
+    isOwner: m.workspace.ownerId === user.id,
     projectCount: m.workspace._count.projects,
+    joinedAt: m.joinedAt,
     members: m.workspace.members.map((mem) => ({
       id: mem.user.id,
       name: mem.user.name,
       email: mem.user.email,
       avatarUrl: mem.user.avatarUrl,
-      role: mem.role,
+      isOwner: mem.user.id === m.workspace.ownerId,
+      joinedAt: mem.joinedAt,
     })),
   }));
 
@@ -56,103 +58,162 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const user = await getOrCreateDbUser();
-  if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
   try {
-    const body = await request.json();
-    // Action 0: Leave / Exit team workspace
-    if (action === "leave" || action === "exit") {
-      const { workspaceId } = body;
-      if (!workspaceId) {
-        return NextResponse.json({ error: "Workspace ID required to leave" }, { status: 400 });
-      }
-
-      await prisma.workspaceMember.deleteMany({
-        where: {
-          workspaceId,
-          userId: user.id,
-        },
-      });
-
-      return NextResponse.json({ message: "Successfully left workspace" });
+    const user = await getOrCreateDbUser();
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Action 1: Join existing team workspace via Join Key
+    const body = (await request.json().catch(() => ({}))) as {
+      action?: string;
+      name?: string;
+      workspaceKey?: string;
+      workspaceId?: string;
+    };
+    const { action, name, workspaceKey, workspaceId } = body;
+
+    // ---- Leave a workspace ------------------------------------------------
+    if (action === "leave" || action === "exit") {
+      if (!workspaceId) {
+        return NextResponse.json(
+          { error: "Workspace ID required to leave" },
+          { status: 400 }
+        );
+      }
+
+      const workspace = await prisma.workspace.findUnique({
+        where: { id: workspaceId },
+        include: {
+          members: { orderBy: { joinedAt: "asc" }, select: { userId: true } },
+        },
+      });
+      if (!workspace) {
+        return NextResponse.json({ error: "Workspace not found" }, { status: 404 });
+      }
+      if (!workspace.members.some((m) => m.userId === user.id)) {
+        return NextResponse.json(
+          { error: "You are not a member of this workspace" },
+          { status: 403 }
+        );
+      }
+
+      // The last person out turns off the lights. Projects filed here would
+      // otherwise be orphaned — `Project.workspaceId` is SetNull on delete, so
+      // they fall back to their creator's personal list rather than vanishing.
+      if (workspace.members.length === 1) {
+        await prisma.workspace.delete({ where: { id: workspaceId } });
+        return NextResponse.json({
+          message: `Left and closed '${workspace.name}'`,
+          deleted: true,
+        });
+      }
+
+      await prisma.$transaction(async (tx) => {
+        await tx.workspaceMember.deleteMany({
+          where: { workspaceId, userId: user.id },
+        });
+
+        // Ownership is only ever a tiebreaker for who can rename or close the
+        // workspace — everyone is an equal member otherwise. If the owner walks,
+        // hand it to whoever joined earliest so the workspace stays manageable.
+        if (workspace.ownerId === user.id) {
+          const successor = workspace.members.find((m) => m.userId !== user.id);
+          if (successor) {
+            await tx.workspace.update({
+              where: { id: workspaceId },
+              data: { ownerId: successor.userId },
+            });
+          }
+        }
+      });
+
+      return NextResponse.json({ message: `Left '${workspace.name}'` });
+    }
+
+    // ---- Join an existing workspace by key --------------------------------
     if (action === "join" || (workspaceKey && !name)) {
-      const key = workspaceKey.trim().toUpperCase();
-      const targetWorkspace = await prisma.workspace.findUnique({
+      const key = workspaceKey?.trim().toUpperCase();
+      if (!key) {
+        return NextResponse.json(
+          { error: "Workspace join key is required" },
+          { status: 400 }
+        );
+      }
+
+      const target = await prisma.workspace.findUnique({
         where: { workspaceKey: key },
       });
-
-      if (!targetWorkspace) {
-        return NextResponse.json({ error: "Invalid Workspace Join Key" }, { status: 404 });
+      if (!target) {
+        return NextResponse.json(
+          { error: "Invalid workspace join key" },
+          { status: 404 }
+        );
       }
 
-      // Check if already a member
-      const existingMember = await prisma.workspaceMember.findUnique({
-        where: {
-          workspaceId_userId: {
-            workspaceId: targetWorkspace.id,
-            userId: user.id,
-          },
-        },
+      const existing = await prisma.workspaceMember.findUnique({
+        where: { workspaceId_userId: { workspaceId: target.id, userId: user.id } },
       });
-
-      if (existingMember) {
-        return NextResponse.json({ message: "You are already a member of this workspace", workspace: targetWorkspace });
+      if (existing) {
+        return NextResponse.json({
+          message: `You're already in '${target.name}'`,
+          workspace: target,
+        });
       }
 
-      const membership = await prisma.workspaceMember.create({
-        data: {
-          workspaceId: targetWorkspace.id,
-          userId: user.id,
-          role: "MEMBER",
-        },
-        include: { workspace: true },
+      await prisma.workspaceMember.create({
+        data: { workspaceId: target.id, userId: user.id, role: "MEMBER" },
       });
 
       return NextResponse.json({
-        message: `Successfully joined '${targetWorkspace.name}'`,
-        workspace: membership.workspace,
-      }, { status: 200 });
+        message: `Joined '${target.name}'`,
+        workspace: target,
+      });
     }
 
-    // Action 2: Create a new Team Workspace
+    // ---- Create a new workspace -------------------------------------------
     if (!name?.trim()) {
-      return NextResponse.json({ error: "Workspace name is required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Workspace name is required" },
+        { status: 400 }
+      );
     }
 
-    const newKey = generateKey("WS");
-    const workspace = await prisma.workspace.create({
-      data: {
-        name: name.trim(),
-        workspaceKey: newKey,
-        ownerId: user.id,
-        members: {
-          create: {
-            userId: user.id,
-            role: "OWNER",
+    // Retry on the astronomically unlikely key collision rather than 500-ing.
+    let workspace = null;
+    for (let attempt = 0; attempt < 5 && !workspace; attempt++) {
+      try {
+        workspace = await prisma.workspace.create({
+          data: {
+            name: name.trim(),
+            workspaceKey: generateWorkspaceKey(),
+            ownerId: user.id,
+            members: { create: { userId: user.id, role: "OWNER" } },
           },
-        },
-      },
-      include: {
-        members: {
           include: {
-            user: { select: { id: true, name: true, email: true, avatarUrl: true } },
+            members: {
+              include: {
+                user: {
+                  select: { id: true, name: true, email: true, avatarUrl: true },
+                },
+              },
+            },
           },
-        },
-      },
-    });
+        });
+      } catch (e) {
+        const code = (e as { code?: string }).code;
+        if (code !== "P2002") throw e;
+      }
+    }
+
+    if (!workspace) {
+      return NextResponse.json(
+        { error: "Could not allocate a workspace key, please try again" },
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json({ workspace }, { status: 201 });
   } catch (error) {
-    console.error("[POST /api/workspaces] Failed:", error);
-    return NextResponse.json(
-      { error: "Failed to process workspace request", details: error instanceof Error ? error.message : String(error) },
-      { status: 500 }
-    );
+    return handleRouteError(error);
   }
 }

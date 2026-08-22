@@ -1,15 +1,23 @@
 import type { Project, User } from "@/generated/prisma/client";
 import prisma from "@/lib/db/prisma";
 import { unauthorized, notFound } from "@/lib/api/errors";
+import { accessibleProjectWhere } from "@/lib/workspace/access";
 import { getOrCreateDbUser } from "./user";
 
 export type ProjectAccess = {
   user: User;
   project: Project;
+  /** False when the project is reachable through a workspace rather than owned. */
+  isOwner: boolean;
 };
 
 /**
- * Centralized ownership check for all /api/projects/[id]/* routes.
+ * Centralized access check for all /api/projects/[id]/* routes.
+ *
+ * Grants access to the project's creator and to every member of the workspace
+ * the project belongs to. Workspace members are equals, so this one check gates
+ * reads and writes alike; routes that must be creator-only (deleting a project
+ * outright, moving it between workspaces) check `isOwner` themselves.
  */
 export async function requireProjectAccess(
   projectId: string
@@ -20,14 +28,14 @@ export async function requireProjectAccess(
   }
 
   const project = await prisma.project.findFirst({
-    where: { id: projectId, userId: user.id },
+    where: { id: projectId, ...(await accessibleProjectWhere(user.id)) },
   });
 
   if (!project) {
     throw notFound("Project not found");
   }
 
-  return { user, project };
+  return { user, project, isOwner: project.userId === user.id };
 }
 
 /**
@@ -42,7 +50,7 @@ export async function requireScriptInProject(
     where: {
       id: scriptVersionId,
       projectId,
-      project: { userId },
+      project: await accessibleProjectWhere(userId),
     },
   });
 

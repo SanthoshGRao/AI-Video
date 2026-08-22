@@ -23,6 +23,9 @@ import { EmptyState } from "@/components/shared/empty-state";
 import { LoadingSpinner } from "@/components/shared/loading-spinner";
 import { cn } from "@/lib/utils";
 import { ProjectActionsMenu } from "@/components/projects/project-actions-menu";
+import { ImportProjectButton } from "@/components/projects/import-project-button";
+import { useActiveWorkspace } from "@/lib/workspace/workspace-store";
+import { useMe } from "@/hooks/use-me";
 import { useProjects, type ProjectListItem } from "@/hooks/use-projects";
 import { isSkitProject, readSkitData } from "@/lib/skit/project";
 import { parseSkit } from "@/lib/skit/parse-script";
@@ -102,10 +105,15 @@ function ProjectCard({
   project,
   onOpen,
   onDeleted,
+  showCreator,
+  viewerId,
 }: {
   project: ProjectListItem;
   onOpen: () => void;
   onDeleted: () => void;
+  /** True in a shared workspace, where whose project it is actually matters. */
+  showCreator?: boolean;
+  viewerId?: string | null;
 }) {
   const isSkit = isSkitProject(project.propertyData);
   const chars = isSkit ? skitCharacters(project) : [];
@@ -149,10 +157,18 @@ function ProjectCard({
             <ProjectActionsMenu
               projectId={project.id}
               projectTitle={project.title}
+              workspaceId={project.workspaceId}
+              canMove={!viewerId || project.userId === viewerId}
               onDeleted={onDeleted}
             />
           </div>
         </div>
+
+        {showCreator && project.user && project.user.id !== viewerId && (
+          <p className="text-[11px] text-[var(--text-tertiary)] mb-2 truncate">
+            by {project.user.name || project.user.email}
+          </p>
+        )}
 
         <div className="flex items-center gap-2 mb-3">
           {isSkit ? (
@@ -206,6 +222,8 @@ export default function ProjectsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const { data: projects = [], isLoading, isError, refetch } = useProjects();
+  const { activeWs, isPersonal } = useActiveWorkspace();
+  const { data: me } = useMe();
 
   const filtered = useMemo(() => {
     let list = projects;
@@ -245,6 +263,8 @@ export default function ProjectsPage() {
           project={project}
           onOpen={() => router.push(`/dashboard/projects/${project.id}/content`)}
           onDeleted={() => refetch()}
+          showCreator={!isPersonal}
+          viewerId={me?.id ?? null}
         />
       ))}
     </div>
@@ -268,13 +288,21 @@ export default function ProjectsPage() {
             Projects
           </h1>
           <p className="text-sm text-[var(--text-secondary)] mt-0.5">
+            {!isPersonal && (
+              <span className="font-medium text-[#2E8F63]">
+                {activeWs?.name} ·{" "}
+              </span>
+            )}
             {videoProjects.length} video{videoProjects.length !== 1 ? "s" : ""} · {skitProjects.length} conversation{skitProjects.length !== 1 ? "s" : ""}
           </p>
         </div>
-        <Button onClick={() => router.push("/dashboard/projects/new")} className="shadow-sm">
-          <Plus className="w-4 h-4" />
-          New Project
-        </Button>
+        <div className="flex items-center gap-2">
+          <ImportProjectButton />
+          <Button onClick={() => router.push("/dashboard/projects/new")} className="shadow-sm">
+            <Plus className="w-4 h-4" />
+            New Project
+          </Button>
+        </div>
       </div>
 
       <div className="flex flex-wrap items-center gap-3 mb-6">

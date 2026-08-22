@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic";
 import { Prisma } from "@/generated/prisma/client";
 import prisma from "@/lib/db/prisma";
 import { requireProjectAccess } from "@/lib/auth/require-project";
+import { assertHoldsLock } from "@/lib/workspace/guard";
 import { handleRouteError, badRequest } from "@/lib/api/errors";
 import { saveTimelineBodySchema } from "@/lib/validations/timeline";
 import { syncTrackClipIds } from "@/lib/timeline/parse";
@@ -136,7 +137,11 @@ export async function GET(_request: Request, context: RouteContext) {
 export async function PUT(request: Request, context: RouteContext) {
   try {
     const { id } = await context.params;
-    const { user } = await requireProjectAccess(id);
+    const { user, project } = await requireProjectAccess(id);
+
+    // The banner asks a teammate not to edit; this is what actually stops the
+    // overwrite. A stale lock (holder went away) does not block anyone.
+    await assertHoldsLock(project, user.id);
 
     const body = await request.json();
     const parsed = saveTimelineBodySchema.safeParse(body);

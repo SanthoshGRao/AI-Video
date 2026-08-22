@@ -5,6 +5,7 @@ import type { SubtitleStyle } from "@/lib/subtitles/types";
 import { serializeAudioAsset, serializeMediaAsset } from "@/lib/storage/serialize";
 import { serializeTimeline } from "@/lib/timeline/serialize";
 import { layoutFactTimings } from "@/lib/facts/overlay-timing";
+import { accessibleProjectWhere } from "@/lib/workspace/access";
 
 function titleTextFromValue(key: string, value: unknown): string[] {
   const label = TITLE_FACT_CATEGORY_LABELS[key] ?? key.replace(/([A-Z])/g, " $1").trim();
@@ -79,7 +80,7 @@ function buildTitleRowsFromFacts(facts: unknown, durationMs?: number): any[] {
 
 export async function getEditorBootstrap(projectId: string, userId: string) {
   const project = await prisma.project.findFirst({
-    where: { id: projectId, userId },
+    where: { id: projectId, ...(await accessibleProjectWhere(userId)) },
     include: {
       mediaAssets: {
         orderBy: { createdAt: "desc" },
@@ -198,8 +199,10 @@ export async function getEditorBootstrap(projectId: string, userId: string) {
   // it as "not part of this project" and strips it out on every load —
   // silently deleting the clip from the timeline on the very next autosave.
   // Pull in whatever the saved timeline actually references, regardless of
-  // which project (or no project) the asset row lives under, as long as it
-  // belongs to this user.
+  // which project (or no project) the asset row lives under, or which
+  // workspace member originally uploaded it — the id set itself is already
+  // trusted, having been read out of this project's own (access-checked)
+  // timeline, not from user input.
   const referencedMediaAssetIds = new Set<string>();
   if (timeline?.clips && typeof timeline.clips === "object") {
     for (const c of Object.values(timeline.clips) as any[]) {
@@ -217,7 +220,7 @@ export async function getEditorBootstrap(projectId: string, userId: string) {
   const knownAssetIds = new Set(project.mediaAssets.map((m) => m.id));
   const missingAssetIds = [...referencedMediaAssetIds].filter((id) => !knownAssetIds.has(id));
   const externallyReferencedAssets = missingAssetIds.length
-    ? await prisma.mediaAsset.findMany({ where: { id: { in: missingAssetIds }, userId } })
+    ? await prisma.mediaAsset.findMany({ where: { id: { in: missingAssetIds } } })
     : [];
 
   // Serialize media assets with resolved URLs

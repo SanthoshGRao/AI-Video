@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { openCutProjectInitializer } from "@/lib/opencut/project-initializer";
 import { getOrCreateDbUser } from "@/lib/auth/user";
 import prisma from "@/lib/db/prisma";
+import { accessibleProjectWhere } from "@/lib/workspace/access";
 
 /**
  * POST /api/projects/[id]/editor/initialize
@@ -9,7 +10,7 @@ import prisma from "@/lib/db/prisma";
  * Auto-initialize an OpenCut project for editing.
  *
  * This endpoint:
- * 1. Validates the project exists and user owns it
+ * 1. Validates the project exists and the user can access it (creator or workspace member)
  * 2. Checks readiness (voiceover, script generated)
  * 3. Loads all generated assets
  * 4. Converts to OpenCut format
@@ -40,7 +41,7 @@ export async function POST(
     const { id: projectId } = await params;
 
     const ownedProject = await prisma.project.findFirst({
-      where: { id: projectId, userId: dbUser.id },
+      where: { id: projectId, ...(await accessibleProjectWhere(dbUser.id)) },
       select: { id: true },
     });
     if (!ownedProject) {

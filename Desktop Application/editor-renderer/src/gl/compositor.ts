@@ -34,6 +34,51 @@ export interface FrameSources {
   get(clipId: string): FrameSourceEntry | undefined;
 }
 
+export interface TextWord {
+  word: string;
+  startMs: number;
+  endMs: number;
+}
+
+/**
+ * Per-word timings for karaoke/highlight/word_pop animations, normalized to
+ * be relative to the clip's own start (0 at `clip.startSec`).
+ *
+ * The editor doesn't save them consistently in that basis: editor-v2 writes
+ * `cue.words` straight through as absolute timeline ms (see
+ * `Web Application/src/lib/editor-v2/timeline-sync.ts`), while the older
+ * OpenCut subtitle builder already makes them cue-relative. Detect which
+ * basis this clip's words are actually in — by checking whether the first
+ * word lines up with the clip's absolute start — and normalize, the same way
+ * the export pipeline does (see `wordsOf()` in
+ * `Desktop Application/src/editor/export/export-runner.ts`), so the word
+ * that lights up here matches the exported frame at the same timestamp.
+ */
+function wordsOf(clip: NativeClip): TextWord[] | undefined {
+  const raw = clip.raw?.words;
+  if (!Array.isArray(raw)) return undefined;
+  const words: TextWord[] = raw
+    .filter((w): w is Record<string, unknown> => typeof w === "object" && w !== null)
+    .map((w) => ({
+      word: String((w as Record<string, unknown>).word ?? ""),
+      startMs: Number((w as Record<string, unknown>).startMs ?? 0),
+      endMs: Number((w as Record<string, unknown>).endMs ?? 0),
+    }))
+    .filter((w) => w.word);
+  if (words.length === 0) return undefined;
+
+  const clipStartMs = clip.startSec * 1000;
+  const firstStart = words[0].startMs;
+  const looksAbsolute = Math.abs(firstStart - clipStartMs) < Math.abs(firstStart);
+  const offset = looksAbsolute ? clipStartMs : 0;
+
+  return words.map((w) => ({ word: w.word, startMs: w.startMs - offset, endMs: w.endMs - offset }));
+}
+
+function activeWordIndexAt(words: TextWord[], timeMs: number): number {
+  return words.findIndex((w) => timeMs >= w.startMs && timeMs < w.endMs);
+}
+
 export class GlCompositor {
   private gl: WebGL2RenderingContext;
   private canvas: HTMLCanvasElement;
@@ -111,7 +156,7 @@ export class GlCompositor {
       const order = trackOrder.get(clip.trackId) ?? 0;
 
       if (clip.kind === "text" || clip.kind === "subtitle") {
-        items.push({ order, run: () => this.compositeTextDirect(clip, W, H) });
+        items.push({ order, run: () => this.compositeTextDirect(clip, W, H, playheadSec) });
       } else {
         items.push({ order, run: () => this.compositeClipDirect(clip, sources, W, H) });
       }
@@ -229,11 +274,13 @@ export class GlCompositor {
     // Note: holder.target is owned by the frame cache now — not released here.
   }
 
-  private compositeTextDirect(clip: NativeClip, canvasW: number, canvasH: number): void {
+  private compositeTextDirect(clip: NativeClip, canvasW: number, canvasH: number, playheadSec: number): void {
     if (!clip.text?.content) return;
     const gl = this.gl;
     const t = clip.transform ?? { x: 0, y: 0, w: canvasW, h: canvasH * 0.2, rotationDeg: 0, opacity: 1 };
-    const texture = this.textCache.getOrRender(clip.text.content, clip.text.style ?? {}, t.w, t.h);
+    const words = wordsOf(clip);
+    const activeWordIndex = words ? activeWordIndexAt(words, (playheadSec - clip.startSec) * 1000) : -1;
+    const texture = this.textCache.getOrRender(clip.text.content, clip.text.style ?? {}, t.w, t.h, words, activeWordIndex);
 
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     gl.viewport(0, 0, this.canvas.width, this.canvas.height);

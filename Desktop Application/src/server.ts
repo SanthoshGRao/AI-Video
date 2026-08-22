@@ -758,6 +758,16 @@ CREATE TABLE IF NOT EXISTS "workspace_members" (
     CONSTRAINT "workspace_members_pkey" PRIMARY KEY ("id")
 );
 
+CREATE TABLE IF NOT EXISTS "project_locks" (
+    "id" TEXT NOT NULL,
+    "projectId" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "userName" TEXT,
+    "acquiredAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "heartbeatAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "project_locks_pkey" PRIMARY KEY ("id")
+);
+
 -- Prisma migrations metadata table (so Prisma Client doesn't complain)
 CREATE TABLE IF NOT EXISTS "_prisma_migrations" (
     "id" VARCHAR(36) NOT NULL,
@@ -827,6 +837,8 @@ CREATE INDEX IF NOT EXISTS "connected_social_accounts_userId_idx" ON "connected_
 CREATE INDEX IF NOT EXISTS "workspaces_ownerId_idx" ON "workspaces"("ownerId");
 CREATE INDEX IF NOT EXISTS "workspace_members_userId_idx" ON "workspace_members"("userId");
 CREATE INDEX IF NOT EXISTS "workspace_members_workspaceId_idx" ON "workspace_members"("workspaceId");
+CREATE UNIQUE INDEX IF NOT EXISTS "project_locks_projectId_key" ON "project_locks"("projectId");
+CREATE INDEX IF NOT EXISTS "project_locks_heartbeatAt_idx" ON "project_locks"("heartbeatAt");
 
 -- Foreign keys (use DO blocks to skip if already exists)
 DO $$ BEGIN ALTER TABLE "brand_kits" ADD CONSTRAINT "brand_kits_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
@@ -859,6 +871,8 @@ DO $$ BEGIN ALTER TABLE "workspaces" ADD CONSTRAINT "workspaces_ownerId_fkey" FO
 DO $$ BEGIN ALTER TABLE "workspace_members" ADD CONSTRAINT "workspace_members_workspaceId_fkey" FOREIGN KEY ("workspaceId") REFERENCES "workspaces"("id") ON DELETE CASCADE ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 DO $$ BEGIN ALTER TABLE "workspace_members" ADD CONSTRAINT "workspace_members_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 DO $$ BEGIN ALTER TABLE "projects" ADD CONSTRAINT "projects_workspaceId_fkey" FOREIGN KEY ("workspaceId") REFERENCES "workspaces"("id") ON DELETE SET NULL ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN ALTER TABLE "project_locks" ADD CONSTRAINT "project_locks_projectId_fkey" FOREIGN KEY ("projectId") REFERENCES "projects"("id") ON DELETE CASCADE ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN ALTER TABLE "project_locks" ADD CONSTRAINT "project_locks_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 `;
 
 /* ------------------------------------------------------------------ */

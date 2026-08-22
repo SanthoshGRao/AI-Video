@@ -15,15 +15,26 @@
  * resolved opacity/geometry/crop. They used to be skipped — which is why they
  * showed up in the editor preview but never in the exported video.
  */
-import type { NativeClip, NativeProject, NativeTrack, EffectInstance } from "../model/types";
+import type { NativeClip, NativeProject, EffectInstance } from "../model/types";
 import { activeTransitionsAt, transitionLayerStyles, type TransitionLayerStyle } from "./transitions";
 
-const TRACK_KIND_PRIORITY: Record<NativeTrack["kind"], number> = {
+/**
+ * Paint order, back to front — matches CLIP_LAYER_PRIORITY in the web app's
+ * layer-priority.ts, and MUST be keyed by the clip's own kind, not its
+ * track's: an image and a video routinely share the same track (every
+ * non-audio/text/subtitle track round-trips through the DB wire format as
+ * `type: "video"`, see legacy-adapter.ts), so keying off track kind put an
+ * image clip at the same z-order as an ordinary video clip. With ties then
+ * broken by array order (clip insertion order, not paint intent), a video
+ * clip could win the tie and paint over the image every frame — the image
+ * was still composited, just invisible behind opaque video, which looked
+ * indistinguishable from "the image wasn't exported."
+ */
+const CLIP_KIND_PRIORITY: Record<NativeClip["kind"], number> = {
   audio: -1,
-  voiceover: -1,
   video: 10,
   image: 20,
-  overlay: 40,
+  shape: 40,
   text: 70,
   subtitle: 100,
 };
@@ -125,7 +136,7 @@ export function resolveFrameAt(project: NativeProject, timeSec: number): Resolve
     let wPct = (t.w / project.width) * 100;
     let hPct = (t.h / project.height) * 100;
     let opacity = t.opacity;
-    let zOrder = track ? (TRACK_KIND_PRIORITY[track.kind] ?? 50) : 50;
+    let zOrder = CLIP_KIND_PRIORITY[clip.kind] ?? 50;
 
     // Bake the transition into this layer's geometry/opacity.
     const style = styleByClipId.get(clip.id);

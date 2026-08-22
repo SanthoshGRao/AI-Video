@@ -26,7 +26,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { SocialConnectionsPanel } from "@/components/social/social-connections-panel";
-import { WorkspacePanel } from "@/components/workspace/workspace-panel";
+import { WorkspaceManager } from "@/components/workspace/workspace-manager";
 import { Users } from "lucide-react";
 import {
   loadExportDefaults,
@@ -353,6 +353,10 @@ export default function SettingsPage() {
       <PlanCard />
       <ExportDefaultsCard />
       <ActivityCard />
+
+      <SectionCard icon={Users} title="Team workspaces">
+        <WorkspaceManager />
+      </SectionCard>
 
       <SectionCard icon={Share2} title="Social media accounts">
         <SocialConnectionsPanel />

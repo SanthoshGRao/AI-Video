@@ -42,6 +42,7 @@ model User {
   characterBundles         CharacterBundle[]
   ownedWorkspaces          Workspace[]       @relation("WorkspaceOwner")
   workspaceMemberships     WorkspaceMember[]
+  projectLocks             ProjectLock[]
 
   @@map("users")
 }
@@ -167,6 +168,7 @@ model Project {
   subtitleTracks    SubtitleTrack[]
   exportJobs        ExportJob[]
   recoverySnapshots RecoverySnapshot[]
+  lock              ProjectLock?
 
   @@index([userId])
   @@index([workspaceId])
@@ -669,4 +671,28 @@ model WorkspaceMember {
   @@index([userId])
   @@index([workspaceId])
   @@map("workspace_members")
+}
+
+// ============================================
+// PROJECT LOCK (soft collaborative lock)
+// ============================================
+
+// A single advisory lock per project, so two workspace members don't silently
+// overwrite each other's timeline. The holder refreshes `heartbeatAt` while the
+// editor is open; a lock whose heartbeat has gone stale (see LOCK_STALE_MS) is
+// treated as free and can be taken over. Never a hard guarantee — it prevents
+// the common accident, not a determined race.
+model ProjectLock {
+  id          String   @id @default(cuid())
+  projectId   String   @unique
+  userId      String
+  userName    String? // Denormalized for the banner, so the UI needs no join
+  acquiredAt  DateTime @default(now())
+  heartbeatAt DateTime @default(now())
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([heartbeatAt])
+  @@map("project_locks")
 }
