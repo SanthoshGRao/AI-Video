@@ -124,13 +124,9 @@ function loadEnvFile(filePath: string): Record<string, string> {
  * Web Application/.env.local in dev, or from Settings / the API relay
  * in packaged builds.
  */
-const DEFAULT_REMOTE_DATABASE_URL =
-  "postgresql://videostudio:envision%40123@147.93.108.218:5432/videostudio";
-
 const OAUTH_CLIENT_DEFAULTS: AppConfig = {
   googleClientId:
     "858992570133-cmsit4q743jufpngdobbmbr06slp05vf.apps.googleusercontent.com",
-  databaseUrl: DEFAULT_REMOTE_DATABASE_URL,
 };
 
 /**
@@ -150,12 +146,16 @@ const OAUTH_CLIENT_DEFAULTS: AppConfig = {
  * gcloud and the GitHub CLI ship theirs too), so only the client *secret*
  * and the AI keys live here; without them the app falls back to the AI relay
  * or to keys entered in Settings.
+ *
+ * The shared-workspace databaseUrl also lives here, not as a literal in this
+ * file. v1.1.9 shipped it hardcoded in source — a public-repo credential
+ * leak that also forced a password rotation — before moving it here.
  */
 function loadBakedSecrets(): AppConfig {
   try {
     const raw = fs.readFileSync(path.join(__dirname, "secrets.json"), "utf-8");
     const parsed = JSON.parse(raw) as AppConfig;
-    // Only ever honour credentials from here — identity or DB config.
+    // Only ever honour credentials from here — never identity.
     const allowed = [
       "googleClientId",
       "googleClientSecret",
