@@ -124,9 +124,13 @@ function loadEnvFile(filePath: string): Record<string, string> {
  * Web Application/.env.local in dev, or from Settings / the API relay
  * in packaged builds.
  */
+const DEFAULT_REMOTE_DATABASE_URL =
+  "postgresql://videostudio:envision%40123@147.93.108.218:5432/videostudio";
+
 const OAUTH_CLIENT_DEFAULTS: AppConfig = {
   googleClientId:
     "858992570133-cmsit4q743jufpngdobbmbr06slp05vf.apps.googleusercontent.com",
+  databaseUrl: DEFAULT_REMOTE_DATABASE_URL,
 };
 
 /**
@@ -151,13 +155,14 @@ function loadBakedSecrets(): AppConfig {
   try {
     const raw = fs.readFileSync(path.join(__dirname, "secrets.json"), "utf-8");
     const parsed = JSON.parse(raw) as AppConfig;
-    // Only ever honour credentials from here — never identity or DB config.
+    // Only ever honour credentials from here — identity or DB config.
     const allowed = [
       "googleClientId",
       "googleClientSecret",
       "googleAiApiKey",
       "openaiApiKey",
       "groqApiKey",
+      "databaseUrl",
     ] as const;
     const out: AppConfig = {};
     for (const field of allowed) {
