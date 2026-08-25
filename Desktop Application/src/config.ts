@@ -175,13 +175,19 @@ function loadBakedSecrets(): AppConfig {
 }
 
 /**
- * Base URL of the hosted AI relay (the standalone "Relay Server/" app
- * deployed to Vercel — mirrors Web Application/src/app/api/relay/*). Not a
- * secret — it's just where the app sends relay-authenticated requests.
- * Override with AI_RELAY_URL in Web Application/.env.local to point at a
- * different/dev relay for local testing.
+ * Base URL of the hosted AI relay (the standalone "Relay Server/" app —
+ * mirrors Web Application/src/app/api/relay/*). Not a secret — it's just
+ * where the app sends relay-authenticated requests. Override with
+ * AI_RELAY_URL in Web Application/.env.local to point at a different/dev
+ * relay for local testing.
+ *
+ * Self-hosted on the same box as the shared workspace database (pm2,
+ * process name "ai-video-relay", port 3000) rather than Vercel. Plain HTTP,
+ * not HTTPS — the relay token is bearer-auth'd and short-lived but still
+ * travels in cleartext; move this behind an nginx TLS reverse proxy if that
+ * becomes a concern.
  */
-export const AI_RELAY_BASE_URL = "https://ai-video-relay.vercel.app";
+export const AI_RELAY_BASE_URL = "http://147.93.108.218:3000";
 
 function getWebAppDir(): string {
   if (!app.isPackaged) {
