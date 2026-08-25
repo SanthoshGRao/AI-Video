@@ -305,6 +305,23 @@ function isRevokedDatabaseUrl(url: string | undefined): boolean {
   );
 }
 
+/**
+ * Same eviction trick again, for the Google OAuth "Desktop app" client id.
+ * Builds before commit 3153ad4 baked this project's client id into every
+ * install's config.json on first sign-in. That commit rotated the default
+ * to a different Google Cloud project (self-hosted relay), but the relay
+ * only accepts ID tokens whose audience matches ITS configured client id —
+ * so an install still pinned to the old one gets a silent, non-fatal
+ * mintRelayToken() failure on every launch, never obtains a relay token,
+ * and every OpenAI-backed feature (extract facts, script generation, photo
+ * analysis) falls back to a mock API key and 500s. Not a secret per RFC
+ * 8252 (see OAUTH_CLIENT_DEFAULTS above), so stored as a literal rather
+ * than a hash.
+ */
+const REVOKED_GOOGLE_CLIENT_IDS = new Set([
+  "983288740045-1n2vactmqqjcu18214e7t7d02camapsn.apps.googleusercontent.com",
+]);
+
 function readSavedConfig(): AppConfig {
   try {
     const raw = fs.readFileSync(configPath(), "utf-8");
@@ -312,6 +329,12 @@ function readSavedConfig(): AppConfig {
     if (isRevoked(parsed.googleAiApiKey)) delete parsed.googleAiApiKey;
     if (isRevoked(parsed.openaiApiKey)) delete parsed.openaiApiKey;
     if (isRevokedDatabaseUrl(parsed.databaseUrl)) delete parsed.databaseUrl;
+    if (parsed.googleClientId && REVOKED_GOOGLE_CLIENT_IDS.has(parsed.googleClientId)) {
+      // Secret is paired 1:1 with the client id — evict both so the current
+      // baked default (and its matching secret) take over together.
+      delete parsed.googleClientId;
+      delete parsed.googleClientSecret;
+    }
     return parsed;
   } catch {
     return {};

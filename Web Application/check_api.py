@@ -1,6 +1,8 @@
+import os
+
 from openai import OpenAI
 
-client = OpenAI(api_key="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")
+client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
 
 try:
     models = client.models.list()
