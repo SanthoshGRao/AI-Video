@@ -274,10 +274,34 @@ const REVOKED_KEY_HASHES = new Set([
   "06f5d1abaac254b93847f3fb402b8ce118d5554d23078b73ce09de06481261be",
 ]);
 
+/**
+ * Same eviction trick as REVOKED_KEY_HASHES, for shared-workspace databaseUrl
+ * values that are now known-bad rather than merely rotated. Builds up to
+ * 1.1.11 baked port 5432 (blocked outbound on some networks — see the 1.1.12
+ * fix that moved to a forwarder on 8443) into every install's config.json on
+ * first run. Without this, those installs stay pinned to the dead port
+ * forever: saved config always wins over the new default, and there's no
+ * in-app "reset to default" for a field the user never consciously set.
+ */
+const REVOKED_DATABASE_URL_HASHES = new Set([
+  // Leaked-in-source literal from v1.1.9, no sslmode param.
+  "148c0941bf2f6db7ef44f5ade11523589a84503cb53098a2a5bec0c3555957d4",
+  // Same host:5432, with sslmode=require — briefly the 1.1.10/1.1.11 baked
+  // default before the port-8443 forwarder existed.
+  "63804796574d194000d763c233354763b6d3233bd46ff83f2a011ceb25384c7f",
+]);
+
 function isRevoked(key: string | undefined): boolean {
   if (!key) return false;
   return REVOKED_KEY_HASHES.has(
     crypto.createHash("sha256").update(key).digest("hex")
+  );
+}
+
+function isRevokedDatabaseUrl(url: string | undefined): boolean {
+  if (!url) return false;
+  return REVOKED_DATABASE_URL_HASHES.has(
+    crypto.createHash("sha256").update(url).digest("hex")
   );
 }
 
@@ -287,6 +311,7 @@ function readSavedConfig(): AppConfig {
     const parsed = JSON.parse(raw) as AppConfig;
     if (isRevoked(parsed.googleAiApiKey)) delete parsed.googleAiApiKey;
     if (isRevoked(parsed.openaiApiKey)) delete parsed.openaiApiKey;
+    if (isRevokedDatabaseUrl(parsed.databaseUrl)) delete parsed.databaseUrl;
     return parsed;
   } catch {
     return {};
