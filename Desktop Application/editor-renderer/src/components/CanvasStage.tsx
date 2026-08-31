@@ -95,10 +95,25 @@ export function CanvasStage() {
         for (const [clipId, el] of videoElsRef.current) {
           const clip = t.clips.find((c) => c.id === clipId);
           if (!clip) continue;
-          const target = (clip.mediaInSec ?? 0) + (state.playheadSec - clip.startSec) * (clip.playbackRate ?? 1);
+
+          // Once the playhead has moved past this clip's own end, freeze it
+          // rather than continuing to seek/play it for the rest of the
+          // "nearby" lookahead window (CanvasStage keeps the element alive
+          // for 1s past endSec so the *next* clip's video has time to load —
+          // this clip itself has nothing left to show). Left unclamped, the
+          // raw `target` below keeps growing past the clip's own source
+          // duration, and seeking a <video> element past its real duration
+          // gets silently clamped by the browser to (or just past) its last
+          // decodable frame — which for many encodes is a partial/blocky GOP
+          // tail, i.e. exactly the "glitch at the end of the clip" symptom.
+          const rawTarget = (clip.mediaInSec ?? 0) + (state.playheadSec - clip.startSec) * (clip.playbackRate ?? 1);
+          const maxTarget = Number.isFinite(el.duration) ? Math.max(0, el.duration - 0.1) : rawTarget;
+          const target = Math.min(rawTarget, maxTarget);
+          const clipEnded = state.playheadSec >= clip.endSec;
+
           if (Math.abs(el.currentTime - target) > 0.15 && el.readyState >= 1) el.currentTime = target;
-          if (state.isPlaying && el.paused) void el.play().catch(() => {});
-          if (!state.isPlaying && !el.paused) el.pause();
+          if (state.isPlaying && !clipEnded && el.paused) void el.play().catch(() => {});
+          if ((!state.isPlaying || clipEnded) && !el.paused) el.pause();
         }
 
         const sources: FrameSources = {

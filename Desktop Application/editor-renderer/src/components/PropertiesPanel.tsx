@@ -1,14 +1,50 @@
 import type { CSSProperties, ReactNode } from "react";
 import { useProjectStore } from "../store/useProjectStore";
-import type { EffectInstance } from "../../../src/editor/model/types";
+import type { EffectInstance, TransitionType } from "../../../src/editor/model/types";
 
 type PresetId = Extract<EffectInstance, { type: "preset" }>["id"];
 
 const PRESETS: PresetId[] = ["grayscale", "sepia", "vintage", "vivid", "cool", "warm", "invert"];
+const TRANSITION_TYPES: TransitionType[] = ["fade", "zoom", "slide", "blur", "push", "wipe", "flip"];
 
 export function PropertiesPanel() {
-  const { timeline, selectedClipId, updateClip } = useProjectStore();
+  const { timeline, selectedClipId, selectedTransitionId, updateClip, updateTransition, removeTransition } =
+    useProjectStore();
   const clip = timeline?.clips.find((c) => c.id === selectedClipId);
+  const transition = timeline?.transitions.find((tr) => tr.id === selectedTransitionId);
+
+  if (transition) {
+    return (
+      <div style={{ width: 260, borderLeft: "1px solid #232326", background: "#0e0e10", padding: 12, overflowY: "auto" }}>
+        <div style={{ fontSize: 11, color: "#8a8a90", textTransform: "uppercase", marginBottom: 8 }}>Transition</div>
+        <Field label="Type">
+          <select
+            value={transition.type}
+            onChange={(e) => updateTransition(transition.id, { type: e.target.value as TransitionType })}
+            style={selectStyle}
+          >
+            {TRANSITION_TYPES.map((t) => (
+              <option key={t} value={t}>
+                {t}
+              </option>
+            ))}
+          </select>
+        </Field>
+        <Field label="Duration (s)">
+          <Num
+            value={transition.durationSec}
+            onChange={(v) => updateTransition(transition.id, { durationSec: Math.max(0.1, v) })}
+          />
+        </Field>
+        <button
+          onClick={() => removeTransition(transition.id)}
+          style={{ ...inputStyle, background: "#3a1f1f", border: "1px solid #5a2f2f", cursor: "pointer", marginTop: 8 }}
+        >
+          Remove transition
+        </button>
+      </div>
+    );
+  }
 
   if (!clip) {
     return (

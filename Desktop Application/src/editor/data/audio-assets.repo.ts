@@ -1,7 +1,7 @@
 import { getPool } from "./pool";
 import type { AudioAssetRow } from "./types";
 
-const COLUMNS = `id, "projectId", "voiceType", "localPath", "durationMs", "waveformData", "wordTimestamps"`;
+const COLUMNS = `id, "projectId", "voiceType", "localPath", "r2Url", "durationMs", "waveformData", "wordTimestamps"`;
 
 export async function listAudioAssetsForProject(projectId: string): Promise<AudioAssetRow[]> {
   const { rows } = await getPool().query(

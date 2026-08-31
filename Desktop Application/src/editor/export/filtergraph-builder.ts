@@ -10,9 +10,9 @@
  *    transitions (exact per-type curves are a Phase 2 GPU-compositor item).
  *  - `glow` and `lut` effects are not yet implemented (logged + skipped
  *    rather than failing the export).
- *  - Only dedicated audio/voiceover-track clips are mixed into the export
- *    audio (matches the old fallback pipeline's behavior — video clips'
- *    own embedded audio is not yet mixed in).
+ *  - Dedicated audio/voiceover-track clips AND video clips' own embedded
+ *    audio (any track) are mixed into the export audio, when a video's
+ *    source was confirmed via ffprobe to actually have an audio stream.
  *  - Text/shape clips render via ffmpeg's `drawtext`/`drawbox`, not the
  *    WebGL compositor (that lands in Phase 2 and replaces this).
  */
@@ -24,6 +24,12 @@ export interface ResolvedMediaPath {
   audioAssetId?: string;
   localPath: string;
   durationMs?: number | null;
+  /** Only meaningful for a video's own media entry: whether the source file
+   * has an audio stream at all. Required before mixing a video clip's own
+   * audio in — referencing a nonexistent `[idx:a]` stream aborts the whole
+   * ffmpeg filter graph, so an unprobed/false video is silently skipped
+   * rather than assumed to have sound. */
+  hasAudio?: boolean;
 }
 
 export interface BuildInput {
@@ -356,32 +362,51 @@ export function buildFilterGraph(input: BuildInput): FilterGraphPlan {
     composite = withSubs;
   }
 
-  // ---- Audio: mix only dedicated audio/voiceover track clips ----
+  // ---- Audio: dedicated audio/voiceover clips, PLUS video clips' own
+  // embedded audio (any video track — e.g. a video dragged onto a second/
+  // overlay track previously produced no sound at all, since this loop used
+  // to only look at "audio"-kind clips on "audio"/"voiceover" tracks). A
+  // video clip's audio is only mixed in when the source was confirmed (via
+  // ffprobe, see export-runner.ts) to actually have an audio stream —
+  // referencing a stream that doesn't exist aborts the whole filter graph.
   const audioTracks = project.tracks.filter((t) => t.kind === "audio" || t.kind === "voiceover");
+  const videoTracksForAudio = project.tracks.filter((t) => t.kind !== "audio" && t.kind !== "voiceover");
   const audioLabels: string[] = [];
+
+  function mixClipAudio(clip: NativeClip): void {
+    const idx = addAudioInput(clip);
+    if (idx === null) return;
+    const mediaIn = clip.mediaInSec ?? 0;
+    const dur = clip.endSec - clip.startSec;
+    const volume = clip.audio?.muted ? 0 : (clip.audio?.volume ?? 1);
+    const fadeIn = clip.audio?.fadeInSec ?? 0;
+    const fadeOut = clip.audio?.fadeOutSec ?? 0;
+    const delayMs = Math.round(clip.startSec * 1000);
+    const label = `a${audioLabels.length}`;
+
+    const chain = [
+      `[${idx}:a]atrim=start=${mediaIn.toFixed(3)}:duration=${dur.toFixed(3)}`,
+      "asetpts=PTS-STARTPTS",
+      `volume=${clamp(volume, 0, 4).toFixed(3)}`,
+    ];
+    if (fadeIn > 0) chain.push(`afade=t=in:st=0:d=${fadeIn.toFixed(3)}`);
+    if (fadeOut > 0) chain.push(`afade=t=out:st=${Math.max(0, dur - fadeOut).toFixed(3)}:d=${fadeOut.toFixed(3)}`);
+    chain.push(`adelay=${delayMs}|${delayMs}`);
+    filterLines.push(chain.join(",") + `[${label}]`);
+    audioLabels.push(label);
+  }
+
   for (const track of audioTracks) {
     const clips = project.clips.filter((c) => c.trackId === track.id && c.kind === "audio");
-    for (const clip of clips) {
-      const idx = addAudioInput(clip);
-      if (idx === null) continue;
-      const mediaIn = clip.mediaInSec ?? 0;
-      const dur = clip.endSec - clip.startSec;
-      const volume = clip.audio?.muted ? 0 : (clip.audio?.volume ?? 1);
-      const fadeIn = clip.audio?.fadeInSec ?? 0;
-      const fadeOut = clip.audio?.fadeOutSec ?? 0;
-      const delayMs = Math.round(clip.startSec * 1000);
-      const label = `a${audioLabels.length}`;
+    for (const clip of clips) mixClipAudio(clip);
+  }
 
-      const chain = [
-        `[${idx}:a]atrim=start=${mediaIn.toFixed(3)}:duration=${dur.toFixed(3)}`,
-        "asetpts=PTS-STARTPTS",
-        `volume=${clamp(volume, 0, 4).toFixed(3)}`,
-      ];
-      if (fadeIn > 0) chain.push(`afade=t=in:st=0:d=${fadeIn.toFixed(3)}`);
-      if (fadeOut > 0) chain.push(`afade=t=out:st=${Math.max(0, dur - fadeOut).toFixed(3)}:d=${fadeOut.toFixed(3)}`);
-      chain.push(`adelay=${delayMs}|${delayMs}`);
-      filterLines.push(chain.join(",") + `[${label}]`);
-      audioLabels.push(label);
+  for (const track of videoTracksForAudio) {
+    const clips = project.clips.filter((c) => c.trackId === track.id && c.kind === "video");
+    for (const clip of clips) {
+      const resolved = clip.mediaAssetId ? mediaByAssetId.get(clip.mediaAssetId) : undefined;
+      if (!resolved?.hasAudio) continue;
+      mixClipAudio(clip);
     }
   }
 

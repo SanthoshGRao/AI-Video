@@ -1,7 +1,7 @@
 import { getPool } from "./pool";
 import type { MediaAssetRow } from "./types";
 
-const COLUMNS = `id, "projectId", "userId", type, "originalName", "localPath", width, height, "durationMs", "mimeType"`;
+const COLUMNS = `id, "projectId", "userId", type, "originalName", "localPath", "r2Url", width, height, "durationMs", "mimeType"`;
 
 export async function listMediaAssetsForProject(projectId: string): Promise<MediaAssetRow[]> {
   const { rows } = await getPool().query(

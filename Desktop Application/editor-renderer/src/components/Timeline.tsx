@@ -1,10 +1,16 @@
 import { useCallback, useEffect, useRef, useState, type MouseEvent as ReactMouseEvent } from "react";
 import { useProjectStore } from "../store/useProjectStore";
-import type { NativeClip } from "../../../src/editor/model/types";
+import type { NativeClip, NativeTransition } from "../../../src/editor/model/types";
 import { filterVisibleClips, type Viewport } from "../lib/virtualization";
 
 const PX_PER_SEC = 60;
 const TRACK_HEIGHT = 44;
+
+/** How close two clips must be to count as "a cut" a transition can be
+ * added to — small enough to not offer one across a deliberate gap. */
+const ADJACENCY_EPS_SEC = 0.05;
+
+const TRANSITION_HANDLE_SIZE = 16;
 
 const TRACK_COLORS: Record<string, string> = {
   video: "#2d5f8a",
@@ -19,8 +25,20 @@ const TRACK_COLORS: Record<string, string> = {
 type DragMode = "move" | "trim-start" | "trim-end";
 
 export function Timeline() {
-  const { timeline, selectedClipId, selectClip, updateClip, playheadSec, setPlayhead, isPlaying, setPlaying } =
-    useProjectStore();
+  const {
+    timeline,
+    selectedClipId,
+    selectClip,
+    updateClip,
+    playheadSec,
+    setPlayhead,
+    isPlaying,
+    setPlaying,
+    selectedTransitionId,
+    selectTransition,
+    addTransition,
+    removeTransition,
+  } = useProjectStore();
   const dragState = useRef<{ clip: NativeClip; mode: DragMode; startX: number; origStart: number; origEnd: number } | null>(
     null
   );
@@ -156,10 +174,94 @@ export function Timeline() {
                     />
                   </div>
                 ))}
+              <TransitionHandles
+                clips={timeline.clips.filter((c) => c.trackId === track.id)}
+                transitions={timeline.transitions}
+                selectedTransitionId={selectedTransitionId}
+                onAdd={addTransition}
+                onSelect={selectTransition}
+                onRemove={removeTransition}
+              />
             </div>
           ))}
         </div>
       </div>
     </div>
   );
+}
+
+const TRANSITIONABLE_KINDS = new Set<NativeClip["kind"]>(["video", "image"]);
+
+/** Renders a small handle at each cut between two adjacent video/image
+ * clips on this track: a "+" to add a transition where none exists yet, or
+ * a filled dot (click to remove) where one already does. Adding pulls the
+ * incoming clip back by the transition's duration so the two genuinely
+ * overlap — see addTransition() in useProjectStore.ts. */
+function TransitionHandles({
+  clips,
+  transitions,
+  selectedTransitionId,
+  onAdd,
+  onSelect,
+  onRemove,
+}: {
+  clips: NativeClip[];
+  transitions: NativeTransition[];
+  selectedTransitionId: string | null;
+  onAdd: (fromClipId: string, toClipId: string) => void;
+  onSelect: (id: string | null) => void;
+  onRemove: (id: string) => void;
+}) {
+  const sorted = clips.filter((c) => TRANSITIONABLE_KINDS.has(c.kind)).sort((a, b) => a.startSec - b.startSec);
+  const transitionByPair = new Map(transitions.map((tr) => [`${tr.fromClipId}->${tr.toClipId}`, tr]));
+
+  const handles = [];
+  for (let i = 0; i < sorted.length - 1; i++) {
+    const a = sorted[i];
+    const b = sorted[i + 1];
+    const existing = transitionByPair.get(`${a.id}->${b.id}`);
+    // Adjacent (a plain cut) if the clips touch, or already overlap by
+    // exactly an existing transition's duration.
+    const gap = b.startSec - a.endSec;
+    if (!existing && Math.abs(gap) > ADJACENCY_EPS_SEC) continue;
+    if (existing && Math.abs(gap + existing.durationSec) > ADJACENCY_EPS_SEC) continue;
+
+    const selected = existing?.id === selectedTransitionId;
+    handles.push(
+      <div
+        key={`${a.id}-${b.id}`}
+        title={existing ? `${existing.type} transition (${existing.durationSec.toFixed(1)}s) — click to remove` : "Add transition"}
+        onClick={(e) => {
+          e.stopPropagation();
+          if (existing) {
+            selected ? onRemove(existing.id) : onSelect(existing.id);
+          } else {
+            onAdd(a.id, b.id);
+          }
+        }}
+        style={{
+          position: "absolute",
+          left: a.endSec * PX_PER_SEC - TRANSITION_HANDLE_SIZE / 2,
+          top: "50%",
+          transform: "translateY(-50%)",
+          width: TRANSITION_HANDLE_SIZE,
+          height: TRANSITION_HANDLE_SIZE,
+          borderRadius: "50%",
+          background: existing ? (selected ? "#3a7bfd" : "#c98a2d") : "#232326",
+          border: "1px solid rgba(255,255,255,0.4)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontSize: 11,
+          lineHeight: 1,
+          color: "#fff",
+          cursor: "pointer",
+          zIndex: 5,
+        }}
+      >
+        {existing ? "◆" : "+"}
+      </div>
+    );
+  }
+  return <>{handles}</>;
 }

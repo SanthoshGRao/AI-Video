@@ -15,3 +15,11 @@ export async function getSubtitleTrack(id: string): Promise<SubtitleTrackRow | n
   const { rows } = await getPool().query(`SELECT ${COLUMNS} FROM subtitle_tracks WHERE id = $1 LIMIT 1`, [id]);
   return (rows[0] as SubtitleTrackRow) ?? null;
 }
+
+/** Persists edited cue text/timing back to the track's `cues` JSON — the
+ * editor's subtitle clips are the editable surface, but export's ASS
+ * burn-in reads `cues` directly, so an edit has to land here to actually
+ * appear in the exported video. See model/subtitle-sync.ts. */
+export async function updateSubtitleTrackCues(id: string, cues: unknown): Promise<void> {
+  await getPool().query(`UPDATE subtitle_tracks SET cues = $2 WHERE id = $1`, [id, JSON.stringify(cues)]);
+}

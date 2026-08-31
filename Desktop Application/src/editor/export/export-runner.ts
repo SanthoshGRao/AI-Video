@@ -32,7 +32,9 @@ import {
 import { RESOLUTION_HEIGHTS, type ExportOptions } from "./export-types";
 import { getMediaAssetsByIds } from "../data/media-assets.repo";
 import { getAudioAssetsByIds } from "../data/audio-assets.repo";
+import { resolveAssetPath } from "../data/asset-cache";
 import { getSubtitleTrack } from "../data/subtitle-tracks.repo";
+import { probeMedia } from "../media/probe";
 import { completeExportJob, failExportJob, updateExportProgress } from "../data/export-jobs.repo";
 import { logger, timer } from "../diagnostics/logger";
 import { classifyExportError } from "../diagnostics/export-error-taxonomy";
@@ -375,10 +377,62 @@ export async function runExport(
       getAudioAssetsByIds(audioAssetIds),
     ]);
 
-    const mediaPathById = new Map(mediaAssets.filter((m) => m.localPath).map((m) => [m.id, m.localPath!]));
+    // Resolve every asset to a real file on THIS machine, downloading from
+    // R2 into a local cache on a miss — a workspace project's assets were
+    // very possibly generated on a teammate's machine, whose `localPath`
+    // means nothing here. See asset-cache.ts.
+    const [resolvedMediaEntries, resolvedAudioEntries] = await Promise.all([
+      Promise.all(
+        mediaAssets.map(async (m) => [
+          m.id,
+          await resolveAssetPath(m.id, m.localPath, m.r2Url, m.originalName, m.mimeType),
+        ] as const)
+      ),
+      Promise.all(
+        audioAssets.map(async (a) => [a.id, await resolveAssetPath(a.id, a.localPath, a.r2Url)] as const)
+      ),
+    ]);
+    const mediaPathById = new Map(
+      resolvedMediaEntries.filter((e): e is [string, string] => e[1] !== null)
+    );
+    const audioPathById = new Map(
+      resolvedAudioEntries.filter((e): e is [string, string] => e[1] !== null)
+    );
+
+    // Video clips' own embedded audio is only mixed in when the source is
+    // confirmed to actually have an audio stream (see filtergraph-builder.ts)
+    // — probe just the media assets a "video" clip actually references, so a
+    // project with no such clips pays nothing extra.
+    const videoAssetIdsNeedingAudioProbe = new Set(
+      project.clips
+        .filter((c) => c.kind === "video" && c.mediaAssetId && mediaPathById.has(c.mediaAssetId))
+        .map((c) => c.mediaAssetId!)
+    );
+    const hasAudioById = new Map<string, boolean>();
+    await Promise.all(
+      [...videoAssetIdsNeedingAudioProbe].map(async (id) => {
+        try {
+          const info = await probeMedia(mediaPathById.get(id)!);
+          hasAudioById.set(id, info.hasAudio);
+        } catch (err) {
+          logger.warn("export", "Audio-stream probe failed — treating clip as silent", { jobId, mediaAssetId: id, error: String(err) });
+          hasAudioById.set(id, false);
+        }
+      })
+    );
+
     const resolvedMedia: ResolvedMediaPath[] = [
-      ...mediaAssets.filter((m) => m.localPath).map((m) => ({ mediaAssetId: m.id, localPath: m.localPath!, durationMs: m.durationMs })),
-      ...audioAssets.filter((a) => a.localPath).map((a) => ({ audioAssetId: a.id, localPath: a.localPath!, durationMs: a.durationMs })),
+      ...mediaAssets
+        .filter((m) => mediaPathById.has(m.id))
+        .map((m) => ({
+          mediaAssetId: m.id,
+          localPath: mediaPathById.get(m.id)!,
+          durationMs: m.durationMs,
+          hasAudio: hasAudioById.get(m.id),
+        })),
+      ...audioAssets
+        .filter((a) => audioPathById.has(a.id))
+        .map((a) => ({ audioAssetId: a.id, localPath: audioPathById.get(a.id)!, durationMs: a.durationMs })),
     ];
 
     // Anything still pointing at a storage path rather than a DB row (assets

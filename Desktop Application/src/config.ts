@@ -150,6 +150,13 @@ const OAUTH_CLIENT_DEFAULTS: AppConfig = {
  * The shared-workspace databaseUrl also lives here, not as a literal in this
  * file. v1.1.9 shipped it hardcoded in source — a public-repo credential
  * leak that also forced a password rotation — before moving it here.
+ *
+ * The R2 credentials also belong here: they're what lets media generated on
+ * one workspace member's machine actually be visible on another's, since
+ * the shared databaseUrl only shares the DB rows, not the files those rows
+ * point at. Without R2 baked in, a packaged install can only get these from
+ * a user-supplied Web Application/.env.local (dev only) — every real install
+ * would keep writing assets nobody else in the workspace could ever load.
  */
 function loadBakedSecrets(): AppConfig {
   try {
@@ -163,6 +170,11 @@ function loadBakedSecrets(): AppConfig {
       "openaiApiKey",
       "groqApiKey",
       "databaseUrl",
+      "r2Bucket",
+      "r2AccountId",
+      "r2AccessKey",
+      "r2SecretKey",
+      "r2PublicUrl",
     ] as const;
     const out: AppConfig = {};
     for (const field of allowed) {

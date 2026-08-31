@@ -11,6 +11,7 @@ import {
   type StorageCategoryType,
 } from "./paths";
 import { isBlobEnabled, uploadBlob, deleteBlob } from "./blob-storage";
+import { isR2Enabled, uploadToR2, deleteFromR2, isR2Url } from "./r2";
 
 export interface SavedFile {
   localPath: string;
@@ -72,8 +73,16 @@ export function saveBuffer(
 }
 
 /**
- * Async version of saveBuffer that uploads to Vercel Blob in production.
- * This should be used in all API routes instead of saveBuffer.
+ * Async version of saveBuffer that uploads to remote storage (R2 or Vercel
+ * Blob) wherever one is configured. This should be used in all API routes
+ * instead of saveBuffer.
+ *
+ * R2 is checked first: it's what makes a shared-workspace project's media
+ * actually reachable from every machine's Postgres-shared DB row, whereas
+ * plain local storage only ever exists on the machine that generated it.
+ * A local copy is still written alongside it (except on Vercel, whose
+ * filesystem outside /tmp is read-only) so the machine that just created the
+ * asset doesn't need a round trip to read back what it made.
  */
 export async function saveBufferAsync(
   category: StorageCategoryType,
@@ -81,19 +90,38 @@ export async function saveBufferAsync(
   fileName: string,
   buffer: Buffer
 ): Promise<SavedFile> {
-  if (isBlobEnabled()) {
-    const result = await uploadBlob(category, projectId, fileName, buffer);
-    return {
-      localPath: "", // No local path on Vercel
-      key: result.key,
-      url: result.url, // Persistent Vercel Blob CDN URL
-      fileName: result.fileName,
-      sizeBytes: result.sizeBytes,
-    };
+  let localPath = "";
+  if (!isVercelDeployment()) {
+    localPath = saveBuffer(category, projectId, fileName, buffer).localPath;
   }
 
-  // Local development — use filesystem
-  return saveBuffer(category, projectId, fileName, buffer);
+  if (isR2Enabled()) {
+    const result = await uploadToR2(category, projectId, fileName, buffer);
+    return { localPath, key: result.key, url: result.url, fileName: result.fileName, sizeBytes: result.sizeBytes };
+  }
+
+  if (isBlobEnabled()) {
+    const result = await uploadBlob(category, projectId, fileName, buffer);
+    return { localPath, key: result.key, url: result.url, fileName: result.fileName, sizeBytes: result.sizeBytes };
+  }
+
+  // Neither remote store configured — local only (dev default).
+  if (localPath) {
+    return {
+      localPath,
+      key: storageKey(category, projectId, fileName),
+      url: publicUrl(category, projectId, fileName),
+      fileName,
+      sizeBytes: buffer.length,
+    };
+  }
+  return {
+    localPath: "",
+    key: storageKey(category, projectId, fileName),
+    url: publicUrl(category, projectId, fileName),
+    fileName,
+    sizeBytes: buffer.length,
+  };
 }
 
 /** Delete file by absolute localPath if it exists */
@@ -109,17 +137,19 @@ export function deleteLocalFile(localPath: string | null | undefined): void {
   }
 }
 
-/** Delete a file from Blob (if URL is a Blob URL) or from local disk */
+/** Delete a file from R2, Blob (whichever the URL is from), and local disk */
 export async function deleteFileAsync(
   localPath: string | null | undefined,
-  url: string | null | undefined
+  url: string | null | undefined,
+  key?: string | null | undefined
 ): Promise<void> {
-  // If it's a Blob URL, delete from Blob
-  if (url && url.startsWith("https://") && isBlobEnabled()) {
+  if (isR2Url(url) && key) {
+    await deleteFromR2(key);
+  } else if (url && url.startsWith("https://") && isBlobEnabled()) {
     await deleteBlob(url);
-    return;
   }
-  // Otherwise try local deletion
+  // Always also try local deletion — a local cache copy may exist alongside
+  // a remote one (see saveBufferAsync).
   deleteLocalFile(localPath);
 }
 

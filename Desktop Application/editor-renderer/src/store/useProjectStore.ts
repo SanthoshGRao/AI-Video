@@ -1,7 +1,12 @@
 import { create } from "zustand";
 import { createId } from "@paralleldrive/cuid2";
-import type { NativeClip, NativeProject, NativeTrack } from "../../../src/editor/model/types";
+import type { NativeClip, NativeProject, NativeTrack, NativeTransition, TransitionType } from "../../../src/editor/model/types";
 import type { EditorLoadPayload, LoadedAudio, LoadedMedia, LoadedSubtitleTrack } from "../global";
+
+/** Shortest renderable transition — mirrors MIN_TRANSITION_SEC in
+ * Desktop Application/src/editor/export/transitions.ts. */
+const MIN_TRANSITION_SEC = 0.1;
+const DEFAULT_TRANSITION_SEC = 0.6;
 
 export interface PreviewStats {
   lastRenderMs: number;
@@ -22,6 +27,7 @@ interface ProjectStoreState {
   subtitleTrackId: string | null;
 
   selectedClipId: string | null;
+  selectedTransitionId: string | null;
   playheadSec: number;
   isPlaying: boolean;
   isDirty: boolean;
@@ -41,6 +47,10 @@ interface ProjectStoreState {
   selectClip(id: string | null): void;
   updateClip(id: string, patch: Partial<NativeClip>): void;
   addClipFromMedia(media: LoadedMedia, trackId: string, startSec: number): void;
+  selectTransition(id: string | null): void;
+  addTransition(fromClipId: string, toClipId: string): void;
+  updateTransition(id: string, patch: Partial<Pick<NativeTransition, "type" | "durationSec">>): void;
+  removeTransition(id: string): void;
   setPlayhead(sec: number): void;
   setPlaying(v: boolean): void;
 }
@@ -75,6 +85,7 @@ export const useProjectStore = create<ProjectStoreState>((set, get) => ({
   subtitleTrackId: null,
 
   selectedClipId: null,
+  selectedTransitionId: null,
   playheadSec: 0,
   isPlaying: false,
   isDirty: false,
@@ -147,7 +158,7 @@ export const useProjectStore = create<ProjectStoreState>((set, get) => ({
   },
 
   selectClip(id) {
-    set({ selectedClipId: id });
+    set({ selectedClipId: id, selectedTransitionId: id ? null : get().selectedTransitionId });
   },
 
   updateClip(id, patch) {
@@ -184,6 +195,80 @@ export const useProjectStore = create<ProjectStoreState>((set, get) => ({
     };
     next.durationSec = recomputeDuration(next);
     set({ timeline: next, isDirty: true, selectedClipId: clip.id });
+  },
+
+  selectTransition(id) {
+    set({ selectedTransitionId: id, selectedClipId: id ? null : get().selectedClipId });
+  },
+
+  /** Creates a transition between two adjacent clips on the same track. The
+   * incoming clip is pulled back by the transition's own duration so the
+   * two genuinely overlap — see transitionWindow() in
+   * Desktop Application/src/editor/export/transitions.ts, which requires
+   * that overlap to render anything (a transition between clips that
+   * merely touch, with no shared span, is defined to render as nothing
+   * rather than a broken blend). */
+  addTransition(fromClipId, toClipId) {
+    const { timeline } = get();
+    if (!timeline) return;
+    const fromClip = timeline.clips.find((c) => c.id === fromClipId);
+    const toClip = timeline.clips.find((c) => c.id === toClipId);
+    if (!fromClip || !toClip || fromClip.trackId !== toClip.trackId) return;
+
+    const maxDur = Math.min(fromClip.endSec - fromClip.startSec, toClip.endSec - toClip.startSec);
+    if (maxDur <= MIN_TRANSITION_SEC) return;
+    const durationSec = Math.min(DEFAULT_TRANSITION_SEC, maxDur);
+
+    const transition: NativeTransition = {
+      id: createId(),
+      trackId: fromClip.trackId,
+      fromClipId,
+      toClipId,
+      type: "fade",
+      durationSec,
+    };
+
+    const clips = timeline.clips.map((c) => (c.id === toClipId ? { ...c, startSec: c.startSec - durationSec } : c));
+    const next: NativeProject = { ...timeline, clips, transitions: [...timeline.transitions, transition] };
+    set({ timeline: next, isDirty: true, selectedTransitionId: transition.id, selectedClipId: null });
+  },
+
+  /** Changing duration also slides the incoming clip to keep it actually
+   * overlapping the outgoing clip by that amount — otherwise the timeline
+   * and the transition's stated duration disagree and transitionWindow()
+   * in the export pipeline silently renders it as a hard cut instead
+   * (see its "report no transition rather than a broken one" comment). */
+  updateTransition(id, patch) {
+    const { timeline } = get();
+    if (!timeline) return;
+    const current = timeline.transitions.find((tr) => tr.id === id);
+    if (!current) return;
+
+    const transitions = timeline.transitions.map((tr) => (tr.id === id ? { ...tr, ...patch } : tr));
+    let clips = timeline.clips;
+    if (patch.durationSec !== undefined && patch.durationSec !== current.durationSec) {
+      const delta = patch.durationSec - current.durationSec;
+      clips = clips.map((c) => (c.id === current.toClipId ? { ...c, startSec: c.startSec - delta } : c));
+    }
+    set({ timeline: { ...timeline, clips, transitions }, isDirty: true });
+  },
+
+  /** Removes the transition and gives the incoming clip back the timeline
+   * span the transition had borrowed from it. */
+  removeTransition(id) {
+    const { timeline } = get();
+    if (!timeline) return;
+    const transition = timeline.transitions.find((tr) => tr.id === id);
+    if (!transition) return;
+    const clips = timeline.clips.map((c) =>
+      c.id === transition.toClipId ? { ...c, startSec: c.startSec + transition.durationSec } : c
+    );
+    const transitions = timeline.transitions.filter((tr) => tr.id !== id);
+    set({
+      timeline: { ...timeline, clips, transitions },
+      isDirty: true,
+      selectedTransitionId: get().selectedTransitionId === id ? null : get().selectedTransitionId,
+    });
   },
 
   setPlayhead(sec) {

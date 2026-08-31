@@ -10,11 +10,13 @@ import { getProject } from "./data/projects.repo";
 import { getLatestTimeline, saveTimeline } from "./data/timelines.repo";
 import { getMediaAsset, listMediaAssetsForProject } from "./data/media-assets.repo";
 import { listAudioAssetsForProject } from "./data/audio-assets.repo";
-import { listSubtitleTracksForProject } from "./data/subtitle-tracks.repo";
+import { listSubtitleTracksForProject, updateSubtitleTrackCues } from "./data/subtitle-tracks.repo";
 import { createExportJob, getExportJob } from "./data/export-jobs.repo";
 import { toMediaUrl } from "./protocols";
+import { hasLocalCopy, resolveAssetPath } from "./data/asset-cache";
 import { fromTimelineDocument, toTimelineDocument } from "./model/legacy-adapter";
 import { emptyNativeProject, type NativeProject } from "./model/types";
+import { collectSubtitleCueUpdates, syncSubtitleClipsFromCues } from "./model/subtitle-sync";
 import type { TimelineDocument } from "./model/legacy-types";
 import { runExport, cancelExport } from "./export/export-runner";
 import type { ExportOptions } from "./export/export-types";
@@ -27,6 +29,19 @@ import { logger } from "./diagnostics/logger";
  * `base` for toTimelineDocument() so settings/textLayers extras the
  * NativeProject model doesn't carry survive a save. */
 const lastLoadedDoc = new Map<string, TimelineDocument>();
+
+/**
+ * URL the renderer can load an asset from. Prefers the local file (fast,
+ * no network) when it actually exists on this machine; otherwise falls
+ * back to the remote (R2) URL directly — video/audio elements can stream
+ * from it without a download step. Null when the asset has neither, which
+ * happens for a workspace project opened on a machine that never generated
+ * this asset and has no R2 configured.
+ */
+function previewUrl(localPath: string | null, r2Url: string | null): string | null {
+  if (hasLocalCopy(localPath)) return toMediaUrl(localPath);
+  return r2Url && /^https?:\/\//i.test(r2Url) ? r2Url : null;
+}
 
 /** projectId -> in-flight export job id, so a second export can't be
  * started for the same project while one is already rendering (which
@@ -61,6 +76,11 @@ export function registerEditorIpc(): void {
       nativeProject = emptyNativeProject(`draft-${projectId}`, projectId);
     }
 
+    // Subtitle clips are rebuilt fresh from the live cues on every load,
+    // not read from whatever's cached in the timeline row — see
+    // subtitle-sync.ts for why the two can otherwise drift or be empty.
+    syncSubtitleClipsFromCues(nativeProject, subtitleTracks);
+
     const snapshot = readSnapshot(projectId);
     const recoverySnapshot =
       snapshot && isSnapshotNewer(snapshot, timelineRow?.version ?? 0, timelineRow?.createdAt ?? new Date(0).toISOString())
@@ -78,7 +98,7 @@ export function registerEditorIpc(): void {
         id: m.id,
         type: m.type,
         originalName: m.originalName,
-        url: m.localPath ? toMediaUrl(m.localPath) : null,
+        url: previewUrl(m.localPath, m.r2Url),
         width: m.width,
         height: m.height,
         durationMs: m.durationMs,
@@ -87,7 +107,7 @@ export function registerEditorIpc(): void {
       audio: audioAssets.map((a) => ({
         id: a.id,
         voiceType: a.voiceType,
-        url: a.localPath ? toMediaUrl(a.localPath) : null,
+        url: previewUrl(a.localPath, a.r2Url),
         durationMs: a.durationMs,
         waveformData: a.waveformData,
       })),
@@ -116,6 +136,15 @@ export function registerEditorIpc(): void {
       });
       lastLoadedDoc.set(args.projectId, doc);
       clearSnapshot(args.projectId);
+
+      // Fold subtitle clip edits (text, retiming) back into their
+      // SubtitleTrack's cues — export's ASS burn-in reads cues directly, not
+      // clips, so an edit that only reached the timeline row would never
+      // show up in the exported video.
+      const cueUpdates = collectSubtitleCueUpdates(args.timeline);
+      await Promise.all(
+        [...cueUpdates].map(([subtitleTrackId, cues]) => updateSubtitleTrackCues(subtitleTrackId, cues))
+      );
 
       return { timelineId: row.id, version: row.version };
     }
@@ -232,11 +261,19 @@ export function registerEditorIpc(): void {
 
   ipcMain.handle("editor:media:thumbnail", async (_event, mediaAssetId: string) => {
     const asset = await getMediaAsset(mediaAssetId);
-    if (!asset?.localPath) return null;
+    if (!asset) return null;
+    const sourcePath = await resolveAssetPath(
+      asset.id,
+      asset.localPath,
+      asset.r2Url,
+      asset.originalName,
+      asset.mimeType
+    );
+    if (!sourcePath) return null;
     try {
       const path = await getOrGenerateThumbnail(
         mediaAssetId,
-        asset.localPath,
+        sourcePath,
         asset.type.toLowerCase().includes("video"),
         asset.durationMs
       );

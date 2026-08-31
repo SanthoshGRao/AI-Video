@@ -47,6 +47,9 @@ export interface MediaAssetRow {
   type: string;
   originalName: string;
   localPath: string | null;
+  /** Remote (R2/Blob) URL — the only copy reachable from a machine other
+   * than the one that created this asset in a shared workspace project. */
+  r2Url: string | null;
   width: number | null;
   height: number | null;
   durationMs: number | null;
@@ -58,6 +61,8 @@ export interface AudioAssetRow {
   projectId: string;
   voiceType: string;
   localPath: string | null;
+  /** Remote (R2/Blob) URL — see MediaAssetRow.r2Url. */
+  r2Url: string | null;
   durationMs: number;
   waveformData: unknown | null;
   wordTimestamps: unknown | null;
